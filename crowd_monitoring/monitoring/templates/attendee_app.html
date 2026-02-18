@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Attendee App</title>
+    
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="icon" href="{% static 'logo.jpg' %}" type="image/jpeg">
+
+    <style>
+        body { font-family: sans-serif; background: #f8fafc; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 400px; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .brand { color: #2563eb; font-weight: 700; font-size: 14px; margin-bottom: 5px; }
+        h1 { font-size: 26px; margin: 0; color: #1e293b; }
+        .subtitle { color: #64748b; margin-bottom: 25px; font-size: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #334155; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 20px; box-sizing: border-box; font-size: 16px; }
+        .location-box { background: #eff6ff; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .btn { width: 100%; background: #2563eb; color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; }
+        
+        /* Success Screen Styles */
+        #success-page { display: none; text-align: center; padding: 40px 0; }
+        .check-circle { width: 80px; height: 80px; background: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 40px; }
+        .pulse { width: 10px; height: 10px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div id="register-page">
+        <p class="brand">Crowd Monitor</p>
+        <h1>Attendee Check-in</h1>
+        <p class="subtitle">Select your event and register.</p>
+
+        <form id="registrationForm">
+            {% csrf_token %}
+            <label>Select Event</label>
+            <select id="eventSelect" required>
+                <option value="" disabled selected>Choose an active event...</option>
+                {% for event in events %}
+                    <option value="{{ event.id }}">{{ event.event_name }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Full Name</label>
+            <input type="text" id="userName" placeholder="Enter your name" required>
+
+            <label>Phone Number</label>
+            <input type="tel" id="userPhone" placeholder="+91 00000 00000" required>
+
+            <div class="location-box">
+                <div>
+                    <strong style="display: block;">Share Location</strong>
+                    <small style="color: #64748b;">Required for safety updates.</small>
+                </div>
+                <input type="checkbox" id="locationCheck" required style="width: 24px; height: 24px;">
+            </div>
+
+            <button type="submit" id="regBtn" class="btn">Register & Start Tracking</button>
+        </form>
+    </div>
+
+    <div id="success-page">
+        <div class="check-circle">✓</div>
+        <h2>Successfully Registered!</h2>
+        <p class="subtitle">Keep this app running for live safety alerts.</p>
+        <div style="background: #f1f5f9; padding: 15px; border-radius: 12px; margin-top: 20px;">
+            <span class="pulse"></span>
+            <span id="sync-status" style="font-size: 14px; color: #475569;">Initializing GPS...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Register Service Worker for PWA/APK
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('{% static "sw.js" %}');
+    }
+
+    let attendeeId = null;
+
+    document.getElementById('registrationForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('regBtn');
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+
+        // 1. Get location first to ensure permission
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            // 2. Register via API
+            const response = await fetch('/api/register-attendee/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    event_id: document.getElementById('eventSelect').value,
+                    name: document.getElementById('userName').value,
+                    phone: document.getElementById('userPhone').value,
+                    lat: lat,
+                    lng: lng
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                attendeeId = data.attendee_id;
+                
+                // 3. Switch to tracking UI
+                document.getElementById('register-page').style.display = 'none';
+                document.getElementById('success-page').style.display = 'block';
+
+                // 4. Start the 15-second interval tracking
+                startTrackingLoop();
+            }
+        }, (error) => {
+            alert("Error: Please enable location to register.");
+            btn.disabled = false;
+            btn.innerText = "Register & Start Tracking";
+        });
+    };
+
+    function startTrackingLoop() {
+        setInterval(() => {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                fetch('/api/update-location/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        attendee_id: attendeeId,
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude
+                    })
+                });
+                document.getElementById('sync-status').innerText = "Last sync: " + new Date().toLocaleTimeString();
+            });
+        }, 15000); // 15 seconds
+    }
+</script>
+
+</body>
+</html>

@@ -1,6 +1,8 @@
 import json
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Point
+from django.views.decorators.csrf import csrf_exempt
 from .models import Event, Zone, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog
 
 def event_list(request):
@@ -79,3 +81,39 @@ def dashboard(request, event_id):
         'map_data_json': json.dumps(map_data),
     }
     return render(request, 'dashboard.html', context)
+
+def attendee_app(request):
+    # Fetch all events so the user can choose one in the dropdown
+    all_events = Event.objects.all() 
+    return render(request, 'attendee_app.html', {'events': all_events})
+
+
+# API to register the user
+@csrf_exempt
+def register_attendee_api(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        event_obj = get_object_or_404(Event, id=data.get('event_id'))
+        attendee = Attendee.objects.create(
+            name=data.get('name'),
+            mobile_no=data.get('phone'),
+            event=event_obj,
+            consent_status = True,
+            no_of_accompanies = 1,
+            email_id = "sui123@gmail.com"
+        )
+        return JsonResponse({'status': 'success', 'attendee_id': attendee.id})
+
+# API to receive GPS updates
+@csrf_exempt
+def update_location_api(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        attendee = get_object_or_404(Attendee, id=data.get('attendee_id'))
+        # Note: Point(longitude, latitude)
+        location = Point(float(data.get('lng')), float(data.get('lat')))
+        AttendeeLocationLog.objects.update_or_create(
+            attendee=attendee,
+            defaults={'location': location}
+        )
+        return JsonResponse({'status': 'updated'})

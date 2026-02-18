@@ -32,10 +32,13 @@
 
 <script>
     // 1. Setup the map (Centered near GEC Wayanad)
-    var map = L.map('map').setView([{{ event.location_boundary.centroid.y }}, {{ event.location_boundary.centroid.x }}], 16);
+    var map = L.map('map').setView([{{ event.location_boundary.centroid.y }}, {{ event.location_boundary.centroid.x }}], 19);
 
     // 2. Load the map tiles (OpenStreetMap)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, // Standard for OpenStreetMap
+    attribution: '© OpenStreetMap'
+}).addTo(map);
 
     // 3. Get the attendee/manager data from Django
     var personData = {{ map_data_json|safe }};
@@ -65,6 +68,10 @@
     if (markers.length > 0) {
         map.fitBounds(markers);
     }
+
+    setTimeout(function(){
+    location.reload();
+    }, 10000);
 </script>
 
 {% endblock %}

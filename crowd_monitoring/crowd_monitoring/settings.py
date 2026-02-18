@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-*l-=-&hb6&7gd7iq#y4vgqp+bp@_-h5%f^hgb-&b=x!t0ju5tw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
 
 
 # Application definition
@@ -54,6 +54,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'crowd_monitoring.urls'
+
+
 
 TEMPLATES = [
     {
@@ -132,3 +134,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 #     ...
 # ]
 
+# This header tells Ngrok to skip the warning page
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+ALLOWED_HOSTS = [
+    'southbound-earle-pressuringly.ngrok-free.dev', 
+    '127.0.0.1', 
+    'localhost'
+]

@@ -1,0 +1,19 @@
+{
+  "name": "Crowd Monitor",
+  "short_name": "CrowdMon",
+  "description": "Real-time attendee tracking and safety monitoring for GECW.",
+  "start_url": "https://southbound-earle-pressuringly.ngrok-free.dev/app/",
+  "scope": "https://southbound-earle-pressuringly.ngrok-free.dev/app",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

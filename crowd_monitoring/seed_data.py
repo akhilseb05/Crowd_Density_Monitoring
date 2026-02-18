@@ -60,4 +60,4 @@ def run_seed(event_name, num_attendees=100, num_managers=12):
 
 if __name__ == "__main__":
     # Change "GECW Fest" to the exact name of the event you created in the UI
-    run_seed("Valiyoorkavu Festival 2")
+    run_seed("Valiyoorkavu Festival")

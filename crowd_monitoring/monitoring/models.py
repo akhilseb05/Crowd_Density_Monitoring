@@ -39,7 +39,7 @@ class Attendee(models.Model):
     name = models.CharField(max_length=100)
     no_of_accompanies = models.IntegerField(default=0)
     mobile_no = models.CharField(max_length=15)
-    email_id = models.EmailField()
+    email_id = models.EmailField(default="example123@gmail.com")
     consent_status = models.BooleanField(default=False)
 
     def __str__(self):
