@@ -142,3 +142,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost'
 ]
+
+# this is for more security, the website can't be accesed via http use ngrok instead
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True

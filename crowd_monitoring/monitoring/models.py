@@ -8,7 +8,7 @@ from django.utils import timezone
 
 class Admin(models.Model):
     name = models.CharField(max_length=100)
-    password = models.CharField(max_length=100) # In production, use Django's built-in User model for security
+    password = models.CharField(max_length=100) 
     contact_no = models.CharField(max_length=15)
 
     def __str__(self):

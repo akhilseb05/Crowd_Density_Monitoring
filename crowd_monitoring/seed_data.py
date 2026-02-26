@@ -3,14 +3,13 @@ import django
 import random
 from django.contrib.gis.geos import Point
 
-# 1. Setup Django Environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'crowd_monitoring.settings')
 django.setup()
 
 from monitoring.models import Event, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog
 
 def run_seed(event_name, num_attendees=100, num_managers=12):
-    # 2. Get the target Event
+    # Get the target Event
     try:
         event = Event.objects.get(event_name=event_name)
     except Event.DoesNotExist:
@@ -19,14 +18,13 @@ def run_seed(event_name, num_attendees=100, num_managers=12):
 
     print(f"Starting seed for: {event.event_name}")
 
-    # 3. Define GEC Wayanad coordinate bounds for random generation
-    # Longitude: 76.0125 to 76.0155 | Latitude: 11.8875 to 11.8905
+
     def get_random_gecw_point():
         lng = random.uniform(76.0285, 76.0315)
         lat = random.uniform(11.8030, 11.8060)
         return Point(lng, lat)
 
-    # 4. Create Attendees and Logs
+    # Create Attendees and Logs
     for i in range(num_attendees):
         attendee = Attendee.objects.create(
             event=event,
@@ -41,7 +39,7 @@ def run_seed(event_name, num_attendees=100, num_managers=12):
             location=get_random_gecw_point()
         )
 
-    # 5. Create Managers and Logs
+    # Create Managers and Logs
     for i in range(num_managers):
         manager = Manager.objects.create(
             event=event,
@@ -59,5 +57,4 @@ def run_seed(event_name, num_attendees=100, num_managers=12):
     print(f"Successfully added {num_attendees} attendees and {num_managers} managers.")
 
 if __name__ == "__main__":
-    # Change "GECW Fest" to the exact name of the event you created in the UI
     run_seed("Valiyoorkavu Festival")

@@ -1,11 +1,36 @@
 import json
 from django.http import JsonResponse
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.gis.geos import GEOSGeometry, Point
 from django.views.decorators.csrf import csrf_exempt
-from .models import Event, Zone, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog
+from .models import Admin, Event, Zone, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog
+
+
+def admin_login(request):
+    if request.method == "POST":
+        admin_name = request.POST.get('name')
+        admin_password = request.POST.get('password')
+        
+        # Verify credentials against your Admin model
+        try:
+            admin_user = Admin.objects.get(name=admin_name, password=admin_password)
+            request.session['admin_id'] = admin_user.id
+            request.session['admin_name'] = admin_user.name
+            return redirect('event_list')
+        except Admin.DoesNotExist:
+            messages.error(request, "Invalid Name or Password")
+            
+    return render(request, 'admin_login.html')
+
+def admin_logout(request):
+    """Clears the admin session and redirects to the login page."""
+    request.session.flush()
+    return redirect('admin_login')
 
 def event_list(request):
+    if 'admin_id' not in request.session:
+        return redirect('admin_login')
     events = Event.objects.all()
     
     if request.method == "POST":
@@ -49,6 +74,8 @@ def event_list(request):
     return render(request, 'event_list.html', {'events': events})
 
 def dashboard(request, event_id):
+    if 'admin_id' not in request.session:
+        return redirect('admin_login')
     event = get_object_or_404(Event, id=event_id)
     
     zones = event.zones.all()
@@ -88,32 +115,74 @@ def attendee_app(request):
     return render(request, 'attendee_app.html', {'events': all_events})
 
 
-# API to register the user
+# # API to register the user
+# @csrf_exempt
+# def register_attendee_api(request):
+#     if request.method == 'POST':
+#         data = json.loads(request.body)
+#         event_obj = get_object_or_404(Event, id=data.get('event_id'))
+#         attendee = Attendee.objects.create(
+#             name=data.get('name'),
+#             mobile_no=data.get('phone'),
+#             event=event_obj,
+#             consent_status = True,
+#             no_of_accompanies = 1,
+#             email_id = "sui123@gmail.com"
+#         )
+#         return JsonResponse({'status': 'success', 'attendee_id': attendee.id})
+
+# # API to receive GPS updates
+# @csrf_exempt
+# def update_location_api(request):
+#     if request.method == 'POST':
+#         data = json.loads(request.body)
+#         attendee = get_object_or_404(Attendee, id=data.get('attendee_id'))
+#         # Note: Point(longitude, latitude)
+#         location = Point(float(data.get('lng')), float(data.get('lat')))
+#         AttendeeLocationLog.objects.update_or_create(
+#             attendee=attendee,
+#             defaults={'location': location}
+#         )
+#         return JsonResponse({'status': 'updated'})
+
+def get_events_api(request):
+    """Returns a list of all events so the Android Spinner can show them."""
+    events = Event.objects.all().values('id', 'event_name')
+    
+    # You must convert the QuerySet to a list and return it as a JsonResponse
+    return JsonResponse(list(events), safe=False)
+    
 @csrf_exempt
 def register_attendee_api(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        event_obj = get_object_or_404(Event, id=data.get('event_id'))
-        attendee = Attendee.objects.create(
-            name=data.get('name'),
-            mobile_no=data.get('phone'),
-            event=event_obj,
-            consent_status = True,
-            no_of_accompanies = 1,
-            email_id = "sui123@gmail.com"
-        )
-        return JsonResponse({'status': 'success', 'attendee_id': attendee.id})
+        try:
+            data = json.loads(request.body)
+            event = get_object_or_404(Event, id=data.get('event_id'))
+            
+            attendee = Attendee.objects.create(
+                event=event,
+                name=data.get('name'),
+                mobile_no=data.get('phone'),
+                email_id=data.get('email'),
+                consent_status = True,
+                no_of_accompanies=int(data.get('accompanies', 0))
+            )
+            return JsonResponse({'status': 'success', 'attendee_id': attendee.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
-# API to receive GPS updates
 @csrf_exempt
 def update_location_api(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        attendee = get_object_or_404(Attendee, id=data.get('attendee_id'))
-        # Note: Point(longitude, latitude)
-        location = Point(float(data.get('lng')), float(data.get('lat')))
-        AttendeeLocationLog.objects.update_or_create(
-            attendee=attendee,
-            defaults={'location': location}
-        )
-        return JsonResponse({'status': 'updated'})
+        try:
+            data = json.loads(request.body)
+            attendee = get_object_or_404(Attendee, id=data.get('attendee_id'))
+            # Note: Point(longitude, latitude)
+            location = Point(float(data.get('lng')), float(data.get('lat')))
+            AttendeeLocationLog.objects.update_or_create(
+                attendee=attendee,
+                defaults={'location': location}
+            )
+            return JsonResponse({'status': 'updated'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

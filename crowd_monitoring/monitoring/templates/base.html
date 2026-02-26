@@ -37,11 +37,26 @@
 </head>
 <body>
 
-    <div class="menu-bar">
-        <strong>CROWD MONITORING SYSTEM</strong> | 
-        <a href="{% url 'event_list' %}">Home (Events)</a> | 
-        <a href="/admin">Admin Login</a>
+    <div class="menu-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background-color: #f8f9fa; border-bottom: 1px solid #ccc;">
+    
+        <div>
+            <strong>CROWD MONITORING SYSTEM</strong> | 
+            <a href="{% url 'event_list' %}">Home (Events)</a>
+        </div>
+
+        <div style="display: flex; align-items: center;">
+            <span style="margin-right: 15px; font-weight: 500;">
+                Logged in as: <strong style="color: #2563eb;">{{ request.session.admin_name }}</strong>
+            </span>
+            <a href="{% url 'admin_logout' %}" 
+            style="background-color: #ef4444; color: white; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: bold;">
+            Logout
+            </a>
+        </div>
+
     </div>
+
+    
 
     <div class="main-content">
         {% block content %}
