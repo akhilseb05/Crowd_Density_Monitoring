@@ -7,8 +7,8 @@ This project is a high-performance safety solution for managing large-scale publ
 
 ## Design & UI (Figma)
 The user interface of admin side and attendee registration are created using figma, and the links of them are provided.
->  **[Admin Side Prototype](https://www.figma.com/design/ZCk6P6zzFQ9AN81zicw5e2/Crowd-Monitoring?node-id=0-1&t=QbpRbps1QhNrIn59-1)**
->  **[Attendee Side Prototype](https://www.figma.com/design/uwGTtUjbeBdfcmTBUkobzJ/Untitled?t=QbpRbps1QhNrIn59-1)**
+* **[Admin Side Prototype](https://www.figma.com/design/ZCk6P6zzFQ9AN81zicw5e2/Crowd-Monitoring?node-id=0-1&t=QbpRbps1QhNrIn59-1)**
+*  **[Attendee Side Prototype](https://www.figma.com/design/uwGTtUjbeBdfcmTBUkobzJ/Untitled?t=QbpRbps1QhNrIn59-1)**
 ---
 
 ## Key Features
