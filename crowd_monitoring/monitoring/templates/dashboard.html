@@ -1,79 +1,102 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Event Dashboard: {{ event.event_name }}</h1>
 
-<p>
-    <b>Date:</b> {{ event.event_date }} <br>
-    <b>Time:</b> {{ event.event_time }}
-</p>
+<div style="padding: 20px;">
+    <h1>Event Dashboard: {{ event.event_name }}</h1>
 
-<hr>
+    <p>
+        <b>Date:</b> {{ event.event_date }} <br>
+        <b>Time:</b> {{ event.event_time }}
+    </p>
 
-<h3>Crowd Statistics</h3>
-<ul>
-    <li>Total Attendees: <b>{{ total_attendees }}</b> (Blue Dots on Map)</li>
-    <li>Total Managers: <b>{{ total_managers }}</b> (Red Dots on Map)</li>
-</ul>
+    <hr>
 
-<h3>Zones and Counts</h3>
-<ul>
-    {% for zone in zones %}
-        <li>{{ zone.zone_name }}: {{ zone.current_count }} people</li>
-    {% empty %}
-        <li>No zones have been added to this event yet.</li>
-    {% endfor %}
-</ul>
+    <h3>Crowd Statistics</h3>
+    <ul>
+        <li>Total Attendees: <b>{{ total_attendees }}</b> (Blue Dots)</li>
+        <li>Total Managers: <b>{{ total_managers }}</b> (Red Dots)</li>
+    </ul>
 
-<hr>
+    <h3>Zones and Counts</h3>
+    <ul>
+        {% for zone in zones %}
+            <li>{{ zone.zone_name }}: <b>{{ zone.current_count }}</b> people</li>
+        {% empty %}
+            <li>No zones added yet.</li>
+        {% endfor %}
+    </ul>
 
-<h3>Live Map Location</h3>
-<div id="map"></div>
+    <hr>
+
+    <h3>Live Map Location</h3>
+    <style>
+        #map { height: 600px; width: 100%; border: 2px solid #333; border-radius: 8px; }
+        .zone-watermark {
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.4); 
+            font-size: 14px;
+            text-transform: uppercase;
+            pointer-events: none;
+            background: none;
+            border: none;
+            white-space: nowrap;
+        }
+    </style>
+
+    <div id="map"></div>
+</div>
 
 <script>
-    // 1. Setup the map (Centered near GEC Wayanad)
-    var map = L.map('map').setView([{{ event.location_boundary.centroid.y }}, {{ event.location_boundary.centroid.x }}], 19);
+    // 1. Initialize Map using Event Centroid
+    var map = L.map('map').setView([{{ event.location_boundary.centroid.y }}, {{ event.location_boundary.centroid.x }}], 18);
 
-    // 2. Load the map tiles (OpenStreetMap)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, // Standard for OpenStreetMap
-    attribution: '© OpenStreetMap'
-}).addTo(map);
+        maxZoom: 20,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
 
-    // 3. Get the attendee/manager data from Django
-    var personData = {{ map_data_json|safe }};
-    var markers = [];
+    // 2. Draw Main Event Boundary
+    var eventGeo = {{ event.location_boundary.json|safe }};
+    L.geoJSON(eventGeo, {
+        style: { color: "#2563eb", weight: 3, fillOpacity: 0.05, dashArray: '5, 10' }
+    }).addTo(map);
 
-    // 4. Draw the dots
-    personData.forEach(function(person) {
-        // Simple color check
-        var dotColor = 'blue';
-        if (person.role == 'manager') {
-            dotColor = 'red';
-        }
-
-        // Draw a circle for each person
-        var circle = L.circleMarker([person.lat, person.lng], {
-            radius: 7,
-            fillColor: dotColor,
-            color: "white",
-            fillOpacity: 0.8
+    // 3. Draw Zone Boundaries & Watermarks
+    // Using 'location_boundary' to match your Zone model
+    {% for zone in zones %}
+        var zoneGeo = {{ zone.location_boundary.json|safe }};
+        
+        // Draw the polygon
+        L.geoJSON(zoneGeo, {
+            style: { color: "#10b981", weight: 2, fillOpacity: 0.1 }
         }).addTo(map);
 
-        // Save location to zoom the map later
-        markers.push([person.lat, person.lng]);
+        // Add Zone Name Watermark at Centroid
+        L.marker([{{ zone.location_boundary.centroid.y }}, {{ zone.location_boundary.centroid.x }}], {
+            icon: L.divIcon({
+                className: 'zone-watermark',
+                html: '{{ zone.zone_name }}',
+                iconSize: [120, 20]
+            })
+        }).addTo(map);
+    {% endfor %}
+
+    // 4. Draw Real-time Attendee/Manager Dots
+    var personData = {{ map_data_json|safe }};
+    personData.forEach(function(person) {
+        var dotColor = (person.role == 'manager') ? 'red' : 'blue';
+        L.circleMarker([person.lat, person.lng], {
+            radius: 6,
+            fillColor: dotColor,
+            color: "white",
+            weight: 1,
+            fillOpacity: 0.9
+        }).addTo(map);
     });
 
-    // 5. Automatically zoom the map to show everyone
-    if (markers.length > 0) {
-        map.fitBounds(markers);
-    }
-
-    setTimeout(function(){
-    location.reload();
-    }, 10000);
+    // 5. Auto-Refresh Logic (10 seconds)
+    setTimeout(function(){ location.reload(); }, 10000);
 </script>
 
 {% endblock %}
-
-
