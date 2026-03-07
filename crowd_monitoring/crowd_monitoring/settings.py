@@ -87,6 +87,14 @@ DATABASES = {
     )
 }
 
+import sys
+if 'test' in sys.argv:
+    DATABASES['default']['TEST'] = {
+        'NAME': 'test_crowd_db',
+        # This prevents Django from trying to create/destory 
+        # the DB if permissions are restricted in CI
+        'DEPENDENCIES': [], 
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
