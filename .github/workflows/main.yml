@@ -14,16 +14,24 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Create .env file
+        run: |
+          # We use the $GITHUB_WORKSPACE variable to ensure the path is absolute
+          echo "TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}" >> $GITHUB_WORKSPACE/crowd_monitoring/.env
+          echo "TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}" >> $GITHUB_WORKSPACE/crowd_monitoring/.env
+          echo "TWILIO_TRIAL_NUMBER=${{ secrets.TWILIO_TRIAL_NUMBER }}" >> $GITHUB_WORKSPACE/crowd_monitoring/.env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> $GITHUB_WORKSPACE/crowd_monitoring/.env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> $GITHUB_WORKSPACE/crowd_monitoring/.env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> $GITHUB_WORKSPACE/crowd_monitoring/.env
+          echo "DATABASE_URL=${{ secrets.DATABASE_UR }}" >> $GITHUB_WORKSPACE/crowd_monitoring/.env
+
+      - name: Verify .env exists
+        run: ls -la $GITHUB_WORKSPACE/crowd_monitoring/.env
+
       - name: Build Docker Stack
         run: docker compose -f crowd_monitoring/docker-compose.yml build
 
       - name: Run Django Tests
         env:
-          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-          TWILIO_TRIAL_NUMBER: ${{ secrets.TWILIO_TRIAL_NUMBER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: postgis://postgres:${{ secrets.POSTGRES_PASSWORD }}@db:5432/postgres
         run: docker compose -f crowd_monitoring/docker-compose.yml run web python manage.py test
