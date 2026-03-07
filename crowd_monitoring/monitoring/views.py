@@ -1,4 +1,5 @@
 import json
+import os
 from django.http import JsonResponse
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
@@ -6,7 +7,9 @@ from django.contrib.gis.geos import GEOSGeometry, Point
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
-from .models import Admin, Event, Zone, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog
+from django.contrib import messages
+from twilio.rest import Client
+from .models import Admin, Event, Zone, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog, Alert
 
 
 def admin_login(request):
@@ -43,7 +46,7 @@ def event_list(request):
             time = request.POST.get('time')
             boundary_wkt = request.POST.get('boundary')
             boundary_wkt = "POLYGON ((" + boundary_wkt + "))"
-            # Validation to prevent IntegrityError (null values)
+
             if name and date and time and boundary_wkt:
                 try:
                     Event.objects.create(
@@ -120,11 +123,66 @@ def dashboard(request, event_id):
     return render(request, 'dashboard.html', context)
 
 
+
+def send_alerts(request, event_id):
+    # Fetch the specific event
+    event = get_object_or_404(Event, id=event_id)
+    zones = event.zones.all()
+    
+    if request.method == "POST":
+        zone_id = request.POST.get('zone')
+        recipient_type = request.POST.get('recipient_type')
+        message_text = request.POST.get('message')
+        
+        selected_zone = get_object_or_404(Zone, id=zone_id)
+        cutoff = timezone.now() - timedelta(minutes=5)
+        
+        # Twilio setup,account details are stored in .env file
+        account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+        auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+        twilio_number = os.environ.get('TWILIO_PHONE_NUMBER')
+
+        client = Client(account_sid, auth_token)
+        # Filter active people ONLY in the selected zone of THIS event
+        recipients = []
+        if recipient_type == 'attendee':
+            logs = AttendeeLocationLog.objects.filter(
+                attendee__event=event,
+                log_timestamp__gte=cutoff,
+                location__within=selected_zone.location_boundary
+            ).select_related('attendee').distinct('attendee')
+            recipients = [log.attendee.mobile_no for log in logs]
+        else:
+            logs = ManagerLocationLog.objects.filter(
+                manager__event=event,
+                log_timestamp__gte=cutoff,
+                location__within=selected_zone.location_boundary
+            ).select_related('manager').distinct('manager')
+            recipients = [log.manager.mobile_no for log in logs]
+
+        # Send and Log
+        success_count = 0
+        for phone in recipients:
+            try:
+                client.messages.create(
+                    body=f"EVENT ALERT [{selected_zone.zone_name}]: {message_text}",
+                    from_=twilio_number,
+                    to=phone 
+                )
+                success_count += 1
+            except Exception as e:
+                print(f"Error sending to {phone}: {e}")
+
+        Alert.objects.create(zone=selected_zone, recipient_type=recipient_type, alert_message=message_text)
+        messages.success(request, f"Alert sent to {success_count} recipients!")
+        return redirect('send_alerts', event_id=event_id)
+
+    return render(request, 'alerts.html', {'event': event, 'zones': zones})
+
+
 def get_events_api(request):
-    """Returns a list of all events so the Android Spinner can show them."""
     events = Event.objects.all().values('id', 'event_name')
     
-    # You must convert the QuerySet to a list and return it as a JsonResponse
     return JsonResponse(list(events), safe=False)
     
 @csrf_exempt

@@ -8,6 +8,7 @@ urlpatterns = [
     path('admin-logout', views.admin_logout, name='admin_logout'),
     # The dashboard page for a specific event (uses the Event ID)
     path('event/<int:event_id>/dashboard/', views.dashboard, name='dashboard'),
+    path('event/<int:event_id>/alerts/', views.send_alerts, name='send_alerts'),
     path('api/get-events/', views.get_events_api, name='get_events_api'),
     path('api/register-attendee/', views.register_attendee_api, name='register_api'),
     path('api/update-location/', views.update_location_api, name='update_location_api'),

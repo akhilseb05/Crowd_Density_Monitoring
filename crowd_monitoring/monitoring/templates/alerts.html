@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="display: flex; min-height: 100vh;">
+    <div style="width: 150px; border-right: 1px solid #ddd; padding: 20px;">
+        <p><a href="{% url 'event_list' %}" style="text-decoration: none; color: #6b7280; font-weight: 500;">← BACK</a></p>
+        <ul style="list-style: none; padding: 0;">
+            <li style="padding: 10px 0;">
+                <a href="{% url 'dashboard' event.id %}" style="text-decoration: none; color: gray;">1. Dashboard</a>
+            </li>
+            <li style="padding: 10px 0; font-weight: bold; color: #2563eb;">
+                2. Alerts
+            </li>
+        </ul>
+    </div>
+
+    <div style="flex-grow: 1; padding: 40px;">
+        <h2>Send Alerts: {{ event.event_name }}</h2>
+        <hr>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 10px; background: #dcfce7; color: #166534; margin-bottom: 20px;">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" style="max-width: 500px;">
+            {% csrf_token %}
+            <div style="margin-bottom: 15px;">
+                <label><b>Target Zone:</b></label><br>
+                <select name="zone" required style="width: 100%; padding: 8px;">
+                    {% for zone in zones %}
+                        <option value="{{ zone.id }}">{{ zone.zone_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label><b>Recipients:</b></label><br>
+                <input type="radio" name="recipient_type" value="attendee" checked> Attendees
+                <input type="radio" name="recipient_type" value="manager" style="margin-left: 15px;"> Managers
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label><b>Message:</b></label><br>
+                <textarea name="message" rows="5" style="width: 100%; padding: 10px;" required placeholder="Enter emergency text..."></textarea>
+            </div>
+
+            <button type="submit" style="background: #ef4444; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px;">
+                SEND BROADCAST
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
