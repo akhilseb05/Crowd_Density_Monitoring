@@ -1,4 +1,4 @@
-name: GECW CI/CD Pipeline
+name: CrowdDense CI/CD Pipeline
 
 on:
   push:
