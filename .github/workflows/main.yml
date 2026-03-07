@@ -22,7 +22,7 @@ jobs:
           echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> crowd_monitoring/.env
           echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> crowd_monitoring/.env
           echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> crowd_monitoring/.env
-          echo "DATABASE_UR=${{ secrets.DATABASE_UR }}" >> crowd_monitoring/.env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> crowd_monitoring/.env
 
       - name: Build Docker Stack
         run: docker compose -f crowd_monitoring/docker-compose.yml build
