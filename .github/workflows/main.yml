@@ -21,7 +21,7 @@ jobs:
           echo "TWILIO_TRIAL_NUMBER=${{ secrets.TWILIO_TRIAL_NUMBER }}" >> .env
 
       - name: Build Docker Stack
-        run: docker compose up --build
+        run: docker compose -f crowd_monitoring/docker-compose.yml build
 
       - name: Run Django Tests
-        run: docker compose run web python manage.py test
+        run: docker compose -f crowd_monitoring/docker-compose.yml run web python manage.py test
