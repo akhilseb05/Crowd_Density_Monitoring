@@ -38,8 +38,8 @@ The user interface of admin side and attendee registration are created using fig
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Akhil-Sebastian05/GROUP_1_MINI_PROJECT/
-   cd GROUP_1_MINI_PROJECT
+   git clone https://github.com/akhil-codec/CrowdDense/
+   cd CrowdDense
    ```
 
 
