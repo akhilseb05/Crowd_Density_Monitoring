@@ -1,0 +1,27 @@
+name: GECW CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          echo "TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}" >> .env
+          echo "TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}" >> .env
+          echo "TWILIO_TRIAL_NUMBER=${{ secrets.TWILIO_TRIAL_NUMBER }}" >> .env
+
+      - name: Build Docker Stack
+        run: docker-compose build
+
+      - name: Run Django Tests
+        run: docker-compose run web python manage.py test
