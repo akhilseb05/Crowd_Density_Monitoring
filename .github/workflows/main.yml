@@ -14,19 +14,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Create .env file
-        run: |
-          echo "TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}" >> crowd_monitoring/.env
-          echo "TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}" >> crowd_monitoring/.env
-          echo "TWILIO_TRIAL_NUMBER=${{ secrets.TWILIO_TRIAL_NUMBER }}" >> crowd_monitoring/.env
-          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> crowd_monitoring/.env
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          
       - name: Build Docker Stack
         run: docker compose -f crowd_monitoring/docker-compose.yml build
 
       - name: Run Django Tests
+        env:
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_TRIAL_NUMBER: ${{ secrets.TWILIO_TRIAL_NUMBER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: docker compose -f crowd_monitoring/docker-compose.yml run web python manage.py test
