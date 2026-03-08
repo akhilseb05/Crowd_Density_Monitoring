@@ -27,3 +27,6 @@ services:
     depends_on:
       db:
         condition: service_healthy # This forces Django to wait
+
+  volumes:
+    postgres_data:
