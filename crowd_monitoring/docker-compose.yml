@@ -26,5 +26,5 @@ services:
       db:
         condition: service_healthy # This forces Django to wait
 
-  volumes:
+volumes:
     postgres_data:
