@@ -4,6 +4,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
+      - DATABASE_URL=postgres://postgres:your_secure_password@db:5432/crowd_pulse_db
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
