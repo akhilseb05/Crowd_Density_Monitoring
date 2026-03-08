@@ -21,7 +21,7 @@ jobs:
       - name: Run Django Tests
         # We inject ALL secrets directly into the container here
         env:
-          DATABASE_URL: postgis://postgres:${{ secrets.POSTGRES_PASSWORD }}@db:5432/postgres
+          DATABASE_URL: postgis://postgres:${{ secrets.POSTGRES_PASSWORD }}@db:5432/postgres/crowd_pulse_db
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
           TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
