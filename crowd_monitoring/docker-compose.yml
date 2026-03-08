@@ -3,7 +3,6 @@ services:
     image: postgis/postgis:15-3.3-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    # Using environment ensures the password is caught during CI/CD initialization
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
@@ -13,8 +12,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    env_file:
-      - .env
     ports:
       - "5432:5432"
 
@@ -29,7 +26,4 @@ services:
       - .env
     depends_on:
       db:
-        condition: service_healthy
-
-volumes:
-  postgres_data:
+        condition: service_healthy # This forces Django to wait
