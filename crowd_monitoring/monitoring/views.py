@@ -165,7 +165,7 @@ def send_alerts(request, event_id):
         for phone in recipients:
             try:
                 client.messages.create(
-                    body=f"EVENT ALERT [{selected_zone.zone_name}]: {message_text}",
+                    body=f"\n{event.event_name} ALERT \n ZONE : {selected_zone.zone_name}: \n\n{message_text}",
                     from_=twilio_number,
                     to=phone 
                 )
@@ -193,10 +193,10 @@ def register_attendee_api(request):
             event = get_object_or_404(Event, id=data.get('event_id'))
             
             attendee = Attendee.objects.create(
-                event=event,
-                name=data.get('name'),
-                mobile_no=data.get('phone'),
-                email_id=data.get('email'),
+                event = event,
+                name = data.get('name'),
+                mobile_no = "+91" + data.get('phone'),
+                email_id = data.get('email'),
                 consent_status = True,
                 no_of_accompanies=int(data.get('accompanies', 0))
             )
