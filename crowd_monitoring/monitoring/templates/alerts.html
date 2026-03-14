@@ -1,54 +1,225 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div style="display: flex; min-height: 100vh;">
-    <div style="width: 150px; border-right: 1px solid #ddd; padding: 20px;">
-        <p><a href="{% url 'event_list' %}" style="text-decoration: none; color: #6b7280; font-weight: 500;">← BACK</a></p>
-        <ul style="list-style: none; padding: 0;">
-            <li style="padding: 10px 0;">
-                <a href="{% url 'dashboard' event.id %}" style="text-decoration: none; color: gray;">1. Dashboard</a>
+<style>
+    :root {
+        --primary-blue: #2563eb;
+        --light-blue: #eff6ff;
+        --dark-blue: #1e40af;
+        --success-green: #16a34a;
+        --bg-white: #ffffff;
+        --bg-gray: #f9fafb;
+        --border-gray: #e5e7eb;
+        --text-dark: #111827;
+        --text-light: #6b7280;
+    }
+
+    body {
+        margin: 0;
+        background-color: var(--bg-gray);
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    .layout-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Slim Sidebar - Corrected Placing */
+    .sidebar {
+        width: 150px;
+        background: var(--bg-white);
+        border-right: 1px solid var(--border-gray);
+        display: flex;
+        flex-direction: column;
+        padding-top: 25px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+    }
+
+    .back-btn {
+        text-decoration: none;
+        color: var(--text-light);
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        margin-left: 5px;
+        text-transform: uppercase;
+    }
+
+    .nav-list {
+        list-style: none;
+        padding: 0;
+        width: 100%;
+    }
+
+    .nav-item {
+        margin-bottom: 20px;
+    }
+
+    .nav-item a {
+        text-decoration: none;
+        color: var(--text-light);
+        font-size: 15px;
+        display: block;
+        padding: 10px 5px;
+        transition: 0.2s;
+    }
+
+    .nav-item.active {
+        background: var(--light-blue);
+        border-right: 3px solid var(--primary-blue);
+    }
+
+    .nav-item.active a {
+        color: var(--primary-blue);
+        font-weight: 700;
+    }
+
+    /* Main Area - Simplified */
+    .main-body {
+        flex: 1;
+        padding: 10px 60px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        color: var(--text-dark);
+        margin-bottom: 30px;
+    }
+
+    .page-title span {
+        color: var(--primary-blue);
+    }
+
+    /* Simple Card Layout */
+    .alert-card {
+        background: var(--bg-white);
+        max-width: 500px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 30px;
+    }
+
+    /* Green Success Message */
+    .success-box {
+        background: #f0fdf4;
+        color: var(--success-green);
+        border: 1px solid #bcf0da;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--text-dark);
+    }
+
+    .input-field {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-gray);
+        border-radius: 6px;
+        box-sizing: border-box; /* Fixes width issue */
+        font-size: 14px;
+    }
+
+    .input-field:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+    }
+
+    .radio-group {
+        display: flex;
+        gap: 20px;
+        font-size: 14px;
+        color: var(--text-light);
+    }
+
+    .radio-group label { font-weight: 400; cursor: pointer; }
+
+    .submit-btn {
+        width: 100%;
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 12px;
+        font-weight: 700;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .submit-btn:hover { background: var(--dark-blue); }
+
+</style>
+
+<div class="layout-container">
+    <nav class="sidebar">
+        <a href="{% url 'event_list' %}" class="back-btn">← Back</a>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{% url 'dashboard' event.id %}">1. Dashboard</a>
             </li>
-            <li style="padding: 10px 0; font-weight: bold; color: #2563eb;">
-                2. Alerts
+            <li class="nav-item active">
+                <a href="#">2. Alerts</a>
             </li>
         </ul>
-    </div>
+    </nav>
 
-    <div style="flex-grow: 1; padding: 40px;">
+    <main class="main-body">
         <h2>Send Alerts: {{ event.event_name }}</h2>
-        <hr>
 
         {% if messages %}
             {% for message in messages %}
-                <div style="padding: 10px; background: #dcfce7; color: #166534; margin-bottom: 20px;">{{ message }}</div>
+                <div class="success-box">
+                    <strong>✓</strong> &nbsp; {{ message }}
+                </div>
             {% endfor %}
         {% endif %}
 
-        <form method="POST" style="max-width: 500px;">
-            {% csrf_token %}
-            <div style="margin-bottom: 15px;">
-                <label><b>Target Zone:</b></label><br>
-                <select name="zone" required style="width: 100%; padding: 8px;">
-                    {% for zone in zones %}
-                        <option value="{{ zone.id }}">{{ zone.zone_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        <div class="alert-card">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label>Target Zone</label>
+                    <select name="zone" class="input-field" required>
+                        <option value="" disabled selected>Select location...</option>
+                        {% for zone in zones %}
+                            <option value="{{ zone.id }}">{{ zone.zone_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <div style="margin-bottom: 15px;">
-                <label><b>Recipients:</b></label><br>
-                <input type="radio" name="recipient_type" value="attendee" checked> Attendees
-                <input type="radio" name="recipient_type" value="manager" style="margin-left: 15px;"> Managers
-            </div>
+                <div class="form-group">
+                    <label>Recipients</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="recipient_type" value="attendee" checked> Attendees</label>
+                        <label><input type="radio" name="recipient_type" value="manager"> Managers</label>
+                    </div>
+                </div>
 
-            <div style="margin-bottom: 15px;">
-                <label><b>Message:</b></label><br>
-                <textarea name="message" rows="5" style="width: 100%; padding: 10px;" required placeholder="Enter emergency text..."></textarea>
-            </div>
+                <div class="form-group">
+                    <label>Message</label>
+                    <textarea name="message" class="input-field" rows="4" required placeholder="Type emergency text..."></textarea>
+                </div>
 
-            <button type="submit" style="background: #ef4444; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px;">
-                SEND BROADCAST
-            </button>
-        </form>
-    </div>
+                <button type="submit" class="submit-btn">SEND BROADCAST</button>
+            </form>
+        </div>
+    </main>
 </div>
 {% endblock %}

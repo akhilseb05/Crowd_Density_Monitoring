@@ -1,72 +1,155 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div style="display: flex; min-height: 100vh; font-family: 'Inter', sans-serif;">
-    <div style="width: 150px; border-right: 1px solid #e5e7eb; padding: 20px; background-color: #ffffff; flex-shrink: 0;">
-        <p><a href="{% url 'event_list' %}" style="text-decoration: none; color: #6b7280; font-weight: 500;">← BACK</a></p>
-        <ul style="list-style: none; padding: 0; margin-top: 30px;">
-            <li style="padding: 10px 0; font-weight: bold; color: #2563eb;">
-                1. Dashboard
-            </li>
-            <li style="padding: 10px 0; margin-bottom: 10px;">
-                <a href="{% url 'send_alerts' event.id %}" style="text-decoration: none; color: #4b5563; font-weight: 500;">2. Alerts</a>
-            </li>
-        </ul>
-    </div>
-
-    <div style="flex-grow: 1; display: flex; flex-direction: column; background-color: #f9fafb;">
-        
-        <div style="padding: 20px 30px; background: white; border-bottom: 1px solid #e5e7eb;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h1 style="margin: 0; font-size: 1.5rem; color: #111827;">Live: {{ event.event_name }}</h1>
-                    <p style="margin: 4px 0 0; color: #6b7280; font-size: 0.9rem;">
-                        {{ event.event_date }} | {{ event.event_time }}
-                    </p>
-                </div>
-                <div style="display: flex; gap: 15px;">
-                    <div style="background:  #2563eb;; color: white; padding: 8px 16px; border-radius: 8px; text-align: center;">
-                        <small style="display: block; font-size: 0.7rem; text-transform: uppercase; opacity: 0.8;">Total Attendees</small>
-                        <b style="font-size: 1.3rem;">{{ total_attendees }}</b>
-                    </div>
-                    <div style="background: #ef4444; color: white; padding: 8px 16px; border-radius: 8px; text-align: center;">
-                        <small style="display: block; font-size: 0.7rem; text-transform: uppercase; opacity: 0.8;">Active Managers</small>
-                        <b style="font-size: 1.3rem;">{{ total_managers }}</b>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div style="padding: 15px 30px; background: #fff; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #e5e7eb;">
-            <div style="display: inline-flex; gap: 20px; align-items: center;">
-                <span style="font-weight: 600; color: #374151; font-size: 0.9rem;">ZONE COUNTS:</span>
-                {% for zone in zones %}
-                <div style="display: inline-block; padding: 6px 12px; background: #f3f4f6; border-radius: 6px; border: 1px solid #e5e7eb;">
-                    <span style="color: #4b5563; font-size: 0.85rem;">{{ zone.zone_name }}:</span>
-                    <strong style="color: #059669; margin-left: 5px;">{{ zone.current_count }}</strong>
-                </div>
-                {% empty %}
-                <span style="color: #9ca3af; font-size: 0.85rem;">No active zones detected.</span>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div style="flex-grow: 1; position: relative; width: 100%;">
-            <div id="map" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0;"></div>
-        </div>
-    </div>
-</div>
-
 <style>
-    /* Full height map with no padding */
+    :root {
+        --primary-blue: #2563eb;
+        --light-blue: #eff6ff;
+        --dark-blue: #1e40af;
+        --success-green: #10b981;
+        --danger-red: #ef4444;
+        --bg-white: #ffffff;
+        --bg-gray: #f9fafb;
+        --border-gray: #e5e7eb;
+        --text-dark: #111827;
+        --text-light: #6b7280;
+    }
+
+    body { 
+        margin: 0; 
+        background-color: var(--bg-gray); 
+        font-family: 'Inter', sans-serif; 
+        overflow-x: hidden; /* Prevent horizontal scroll */
+    }
+
+    .layout-container { 
+        display: flex; 
+    }
+
+    /* Slim Sidebar - Corrected Placing */
+    .sidebar {
+        width: 150px;
+        background: var(--bg-white);
+        border-right: 1px solid var(--border-gray);
+        display: flex;
+        flex-direction: column;
+        padding-top: 25px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+    }
+
+    .back-btn {
+        text-decoration: none;
+        color: var(--text-light);
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        margin-left: 5px;
+        text-transform: uppercase;
+    }
+
+    .nav-list {
+        list-style: none;
+        padding: 0;
+        width: 100%;
+    }
+
+    .nav-item {
+        margin-bottom: 20px;
+    }
+
+    .nav-item a {
+        text-decoration: none;
+        color: var(--text-light);
+        font-size: 15px;
+        display: block;
+        padding: 10px 5px;
+        transition: 0.2s;
+    }
+
+    .nav-item.active {
+        background: var(--light-blue);
+        border-right: 3px solid var(--primary-blue);
+    }
+
+    .nav-item.active a {
+        color: var(--primary-blue);
+        font-weight: 700;
+    }
+
+    /* Main Content Area */
+    .main-body { 
+        flex: 1; 
+        display: flex; 
+        flex-direction: column; 
+    }
+
+    /* Top Header Section */
+    .dashboard-header {
+        padding: 20px 30px;
+        background: var(--bg-white);
+        border-bottom: 1px solid var(--border-gray);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .event-info h1 { margin: 0; font-size: 1.4rem; color: var(--text-dark); }
+    .event-info p { margin: 4px 0 0; color: var(--text-light); font-size: 0.85rem; }
+
+    .stat-group { display: flex; gap: 12px; }
+    .stat-pill {
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-align: center;
+        min-width: 100px;
+    }
+    .pill-blue { background: var(--primary-blue); color: white; }
+    .pill-red { background: var(--danger-red); color: white; }
+    .pill-label { display: block; font-size: 16px; text-transform: uppercase; opacity: 0.9; font-weight: 600; }
+    .pill-value { font-size: 1.2rem; font-weight: 700; }
+
+    /* Zone Horizontal Bar */
+    .zone-strip {
+        padding: 12px 30px;
+        background: var(--bg-white);
+        border-bottom: 1px solid var(--border-gray);
+        overflow-x: auto;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .zone-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 12px;
+        background: var(--bg-gray);
+        border: 1px solid var(--border-gray);
+        border-radius: 6px;
+        font-size: 17px;
+    }
+    .zone-tag strong { color: var(--success-green); margin-left: 6px; }
+
+    /* Map View - Adjusted for full screen scroll */
+    .map-container { 
+        width: 100%; 
+        height: 80vh; /* This makes the map full screen height */
+        position: relative;
+    }
+    
     #map { 
         height: 100%; 
         width: 100%; 
-        z-index: 1;
+        z-index: 1; 
+        /* UPDATED: Change border to light grey and ensure round corners */
         border-radius: 12px; 
-        border: 1px solid #e5e7eb; 
+        border: 1px solid #ddd; /* or use 'lightgrey' */
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     }
+
     .zone-watermark {
         font-weight: bold;
         color: rgba(0, 0, 0, 0.4); 
@@ -78,6 +161,56 @@
         white-space: nowrap;
     }
 </style>
+
+<div class="layout-container">
+    <nav class="sidebar">
+        <a href="{% url 'event_list' %}" class="back-btn">← Back</a>
+        <ul class="nav-list">
+            <li class="nav-item active">
+                <a href="#">1. Dashboard</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'send_alerts' event.id %}">2. Alerts</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="main-body">
+        
+        <header class="dashboard-header">
+            <div class="event-info">
+                <h1>Live: {{ event.event_name }}</h1>
+                <p>{{ event.event_date }} | {{ event.event_time }}</p>
+            </div>
+            <div class="stat-group">
+                <div class="stat-pill pill-blue">
+                    <span class="pill-label">Attendees</span>
+                    <span class="pill-value">{{ total_attendees }}</span>
+                </div>
+                <div class="stat-pill pill-red">
+                    <span class="pill-label">Managers</span>
+                    <span class="pill-value">{{ total_managers }}</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="zone-strip">
+            <span style="font-size: 15px; font-weight: 700; color: var(--text-light);">ZONES:</span>
+            {% for zone in zones %}
+            <div class="zone-tag">
+                <span>{{ zone.zone_name }} : </span>
+                <strong>{{ zone.current_count }}</strong>
+            </div>
+            {% empty %}
+            <span style="color: var(--text-light); font-size: 13px;">No active zones detected.</span>
+            {% endfor %}
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+</div>
 
 <script>
     // Initialize Map
@@ -96,7 +229,7 @@
         style: { color: "#2563eb", weight: 4, fillOpacity: 0.03, dashArray: '8, 8' }
     }).addTo(map);
 
-    // 3. Zone Boundaries & Watermarks
+    // Zone Boundaries & Watermarks
     {% for zone in zones %}
         var zoneGeo = {{ zone.location_boundary.json|safe }};
         L.geoJSON(zoneGeo, {
@@ -112,7 +245,7 @@
         }).addTo(map);
     {% endfor %}
 
-    // 4. Real-time Dots
+    // Real-time Dots
     var personData = {{ map_data_json|safe }};
     personData.forEach(function(person) {
         var dotColor = (person.role == 'manager') ? '#ef4444' : '#3b82f6';
@@ -129,4 +262,3 @@
     setTimeout(function(){ location.reload(); }, 10000);
 </script>
 {% endblock %}
-
