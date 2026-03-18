@@ -36,18 +36,19 @@ def admin_logout(request):
 def event_list(request):
     if 'admin_id' not in request.session:
         return redirect('admin_login')
-    events = Event.objects.all()
+        
+    events = Event.objects.all().order_by('-id') # Ordering to show newest first
     
     if request.method == "POST":
-        # Check which form was submitted
+        # Handle Event Creation
         if 'create_event' in request.POST:
             name = request.POST.get('name')
             date = request.POST.get('date')
             time = request.POST.get('time')
             boundary_wkt = request.POST.get('boundary')
-            boundary_wkt = "POLYGON ((" + boundary_wkt + "))"
-
+            
             if name and date and time and boundary_wkt:
+                boundary_wkt = "POLYGON ((" + boundary_wkt + "))"
                 try:
                     Event.objects.create(
                         event_name=name,
@@ -58,12 +59,14 @@ def event_list(request):
                 except Exception as e:
                     print(f"Error creating event: {e}")
             
+        # Handle Zone Creation
         elif 'create_zone' in request.POST:
             event_id = request.POST.get('event_id')
             zone_name = request.POST.get('zone_name')
             zone_boundary_wkt = request.POST.get('zone_boundary')
-            zone_boundary_wkt = "POLYGON ((" + zone_boundary_wkt + "))"
+            
             if event_id and zone_name and zone_boundary_wkt:
+                zone_boundary_wkt = "POLYGON ((" + zone_boundary_wkt + "))"
                 try:
                     event = get_object_or_404(Event, id=event_id)
                     Zone.objects.create(
@@ -73,6 +76,13 @@ def event_list(request):
                     )
                 except Exception as e:
                     print(f"Error creating zone: {e}")
+
+        # Handle Event Deletion
+        elif 'delete_event' in request.POST:
+            event_id = request.POST.get('event_id')            
+            if event_id:
+                event = get_object_or_404(Event, id=event_id)
+                event.delete()
             
         return redirect('event_list')
 
@@ -125,6 +135,8 @@ def dashboard(request, event_id):
 
 
 def send_alerts(request, event_id):
+    if 'admin_id' not in request.session:
+        return redirect('admin_login')
     # Fetch the specific event
     event = get_object_or_404(Event, id=event_id)
     zones = event.zones.all()

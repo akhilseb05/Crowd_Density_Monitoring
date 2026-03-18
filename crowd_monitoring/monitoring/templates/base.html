@@ -1,66 +1,155 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{% block title %}Crowd Monitoring{% endblock %}</title>
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Crowd Monitoring Dashboard{% endblock %}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+
     <style>
-        /* This tells the browser how big the map should be */
-        #map { 
-            height: 400px; 
-            width: 100%; 
-            border: 2px solid black; 
+        /* Modern Color Palette & Variables */
+        :root {
+            --primary-bg: #f8f9fa;
+            --nav-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --brand-color: #111827;
+            --accent-blue: #2563eb;
+            --accent-red: #ef4444;
         }
 
-        /* Basic page styling */
-        body { 
-            font-family: Arial, sans-serif; 
-            padding: 20px; 
+        /* Base Body Styling */
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0; /* Removed the hardcoded padding to fix sidebar layout gaps */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        /* A simple gray bar for the menu */
-        .menu-bar { 
-            background-color: #dddddd; 
-            padding: 10px; 
-            margin-bottom: 20px; ``
+        /* Modern Sticky Top Navigation */
+        .top-nav {
+            background-color: var(--nav-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.75rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1050; /* Keeps nav above Leaflet maps and standard content */
         }
 
-        /* Simple border for sections */
-        .simple-card { 
-            border: 1px solid #ccc; 
-            padding: 15px; 
-            margin-bottom: 15px; 
+        .nav-brand {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--brand-color);
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .user-greeting {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .user-name {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        /* Refined Logout Button */
+        .btn-logout {
+            background-color: #fff;
+            color: var(--accent-red);
+            border: 1px solid #fee2e2;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            background-color: var(--accent-red);
+            color: #ffffff;
+            border-color: var(--accent-red);
+        }
+
+        /* Global Map Styling */
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            z-index: 1; /* Keeps map layers from overlapping menus */
+        }
+
+        /* Clean Card Component for Child Pages */
+        .simple-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Main Content Wrapper */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
     </style>
 </head>
 <body>
 
-    <div class="menu-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background-color: #f8f9fa; border-bottom: 1px solid #ccc;">
-    
-        <div>
-            <strong>CROWD MONITORING SYSTEM</strong> | 
+    <header class="top-nav">
+        <div class="nav-brand">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-blue);">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            Crowd Monitoring System
         </div>
 
-        <div style="display: flex; align-items: center;">
-            <span style="margin-right: 15px; font-weight: 500;">
-                Logged in as: <strong style="color: #2563eb;">{{ request.session.admin_name }}</strong>
+        <div class="user-section">
+            <span class="user-greeting">
+                Logged in as: <span class="user-name">{{ request.session.admin_name|default:"Admin" }}</span>
             </span>
-            <a href="{% url 'admin_logout' %}" 
-            style="background-color: #ef4444; color: white; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 14px; font-weight: bold;">
-            Logout
-            </a>
+            <a href="{% url 'admin_logout' %}" class="btn-logout">Logout</a>
         </div>
+    </header>
 
-    </div>
-
-    
-
-    <div class="main-content">
+    <main class="main-content">
         {% block content %}
         {% endblock %}
-    </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

@@ -47,6 +47,7 @@
         margin-bottom: 20px;
         margin-left: 5px;
         text-transform: uppercase;
+        padding-left: 15px;
     }
 
     .nav-list {
@@ -64,7 +65,7 @@
         color: var(--text-light);
         font-size: 15px;
         display: block;
-        padding: 10px 5px;
+        padding: 10px 5px 10px 20px;
         transition: 0.2s;
     }
 
@@ -95,20 +96,47 @@
         align-items: center;
     }
 
-    .event-info h1 { margin: 0; font-size: 1.4rem; color: var(--text-dark); }
-    .event-info p { margin: 4px 0 0; color: var(--text-light); font-size: 0.85rem; }
+    .event-info h1 { 
+        margin: 0; 
+        font-size: 1.4rem; 
+        color: var(--text-dark); 
+    }
 
-    .stat-group { display: flex; gap: 12px; }
+    .event-info p { 
+        margin: 4px 0 0; 
+        color: var(--text-light); 
+        font-size: 0.85rem; 
+    }
+
+    .stat-group { 
+        display: flex; 
+        gap: 12px; 
+    }
     .stat-pill {
         padding: 8px 16px;
         border-radius: 8px;
         text-align: center;
         min-width: 100px;
     }
-    .pill-blue { background: var(--primary-blue); color: white; }
-    .pill-red { background: var(--danger-red); color: white; }
-    .pill-label { display: block; font-size: 16px; text-transform: uppercase; opacity: 0.9; font-weight: 600; }
-    .pill-value { font-size: 1.2rem; font-weight: 700; }
+    .pill-blue { 
+        background: var(--primary-blue); 
+        color: white; 
+    }
+    .pill-red { 
+        background: var(--danger-red); 
+        color: white; 
+    }
+    .pill-label { 
+        display: block; 
+        font-size: 16px; 
+        text-transform: uppercase; 
+        opacity: 0.9; 
+        font-weight: 600; 
+    }
+    .pill-value { 
+        font-size: 1.2rem; 
+        font-weight: 700; 
+    }
 
     /* Zone Horizontal Bar */
     .zone-strip {
