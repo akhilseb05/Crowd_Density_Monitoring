@@ -231,3 +231,38 @@ def update_location_api(request):
             return JsonResponse({'status': 'updated'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        
+@csrf_exempt
+def register_manager_api(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            event = get_object_or_404(Event, id=data.get('event_id'))
+            
+            manager = Manager.objects.create(
+                event = event,
+                manager_name = data.get('manager_name'),
+                manager_role = data.get('manager_role'),
+                mobile_no = "+91" + data.get('mobile_no'), 
+                email_id = data.get('email_id')
+            )
+            return JsonResponse({'status': 'success', 'manager_id': manager.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+@csrf_exempt
+def update_manager_location_api(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            manager = get_object_or_404(Manager, id=data.get('manager_id'))
+            
+            location = Point(float(data.get('lng')), float(data.get('lat')))
+            
+            ManagerLocationLog.objects.update_or_create(
+                manager=manager,
+                defaults={'location': location}
+            )
+            return JsonResponse({'status': 'updated'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

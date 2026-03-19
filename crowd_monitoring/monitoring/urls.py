@@ -12,4 +12,6 @@ urlpatterns = [
     path('api/get-events/', views.get_events_api, name='get_events_api'),
     path('api/register-attendee/', views.register_attendee_api, name='register_api'),
     path('api/update-location/', views.update_location_api, name='update_location_api'),
+    path('api/register-manager/', views.register_manager_api, name='register_manager_api'),
+    path('api/update-manager-location/', views.update_manager_location_api, name='update_manager_location_api'),
 ]
