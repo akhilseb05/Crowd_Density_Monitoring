@@ -18,6 +18,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:          
+      - RUN_MAIN=true
     depends_on:
       - db
 

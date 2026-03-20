@@ -93,13 +93,6 @@ def dashboard(request, event_id):
         return redirect('admin_login')
     event = get_object_or_404(Event, id=event_id)
     
-    cutoff = timezone.now() - timedelta(minutes=5)
-
-    # DELETE entries where the timestamp is older than the cutoff
-    AttendeeLocationLog.objects.filter(log_timestamp__lt=cutoff).delete()
-    ManagerLocationLog.objects.filter(log_timestamp__lt=cutoff).delete()
-
-
     zones = event.zones.all()
     for zone in zones:
         # Check how many attendee points are inside this zone's polygon

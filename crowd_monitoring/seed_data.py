@@ -1,15 +1,14 @@
 import os
 import django
 import random
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point,Polygon
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'crowd_monitoring.settings')
 django.setup()
 
 from monitoring.models import Event, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog
 
-def run_seed(event_name, num_attendees=100, num_managers=12):
-    # Get the target Event
+def run_seed(event_name, num_attendees=5000, num_managers=12):
     try:
         event = Event.objects.get(event_name=event_name)
     except Event.DoesNotExist:
@@ -20,35 +19,46 @@ def run_seed(event_name, num_attendees=100, num_managers=12):
 
 
     def get_random_gecw_point():
-        lng = random.uniform(76.0285, 76.0315)
-        lat = random.uniform(11.8030, 11.8060)
-        return Point(lng, lat)
+        boundary_coords = [
+            (75.968463, 11.832977),
+            (75.968862, 11.834550),
+            (75.970386, 11.834107),
+            (75.970180, 11.832314),
+            (75.968463, 11.832977)
+        ]
+        poly = Polygon(boundary_coords)
+        
+        min_lng, min_lat, max_lng, max_lat = poly.extent
+        
+        while True:
+            lng = random.uniform(min_lng, max_lng)
+            lat = random.uniform(min_lat, max_lat)
+            point = Point(lng, lat)
+            
+            if poly.contains(point):
+                return point
 
-    # Create Attendees and Logs
     for i in range(num_attendees):
         attendee = Attendee.objects.create(
             event=event,
             name=f"Attendee_{i+1}",
-            mobile_no=f"90000000{i:02d}",
+            mobile_no=f"9876543210",
             email_id=f"user{i}@example.com",
             consent_status=True
         )
-        # Create a location log for the heatmap
         AttendeeLocationLog.objects.create(
             attendee=attendee,
             location=get_random_gecw_point()
         )
 
-    # Create Managers and Logs
     for i in range(num_managers):
         manager = Manager.objects.create(
             event=event,
             manager_name=f"Manager_{i+1}",
             manager_role="Security",
-            mobile_no=f"80000000{i:02d}",
+            mobile_no=f"9876543210",
             email_id=f"mgr{i}@gecw.ac.in"
         )
-        # Create a location log for the heatmap
         ManagerLocationLog.objects.create(
             manager=manager,
             location=get_random_gecw_point()
@@ -57,4 +67,4 @@ def run_seed(event_name, num_attendees=100, num_managers=12):
     print(f"Successfully added {num_attendees} attendees and {num_managers} managers.")
 
 if __name__ == "__main__":
-    run_seed("Valiyoorkavu Festival")
+    run_seed("GECW Tech Fest")

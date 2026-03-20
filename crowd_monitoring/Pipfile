@@ -10,6 +10,7 @@ dj-database-url = "*"
 twilio = "*"
 djangorestframework = "*"
 django-cors-headers = "*"
+django-apscheduler = "*"
 
 [dev-packages]
 
