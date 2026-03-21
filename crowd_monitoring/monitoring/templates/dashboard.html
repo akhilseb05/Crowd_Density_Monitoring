@@ -26,7 +26,6 @@
         display: flex; 
     }
 
-    /* Slim Sidebar - Corrected Placing */
     .sidebar {
         width: 150px;
         background: var(--bg-white);
@@ -79,14 +78,12 @@
         font-weight: 700;
     }
 
-    /* Main Content Area */
     .main-body { 
         flex: 1; 
         display: flex; 
         flex-direction: column; 
     }
 
-    /* Top Header Section */
     .dashboard-header {
         padding: 20px 30px;
         background: var(--bg-white);
@@ -199,6 +196,9 @@
             </li>
             <li class="nav-item">
                 <a href="{% url 'send_alerts' event.id %}">2. Alerts</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'event_analytics' event.id %}">3. Analytics</a>
             </li>
         </ul>
     </nav>

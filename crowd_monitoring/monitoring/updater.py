@@ -70,6 +70,52 @@ def auto_check_density_and_alert():
             Alert.objects.create(zone=zone, recipient_type='automated', alert_message=message_text)
             print(f"Alert logged for {zone.zone_name}. SMS sent: {sms_sent}")
 
+
+
+def record_crowd_data():
+    from .models import Event, Zone, CrowdLog, AttendeeLocationLog, ManagerLocationLog
+    
+    now = timezone.now()
+    cutoff = now - timedelta(minutes=5)
+    
+    for event in Event.objects.all():
+        total_attendees = AttendeeLocationLog.objects.filter(
+            log_timestamp__gte=cutoff,
+            location__within=event.location_boundary
+        ).values('attendee').distinct().count()
+        
+        total_managers = ManagerLocationLog.objects.filter(
+            log_timestamp__gte=cutoff,
+            location__within=event.location_boundary
+        ).values('manager').distinct().count()
+        
+        CrowdLog.objects.create(
+            event=event,
+            zone=None, 
+            person_count=(total_attendees + total_managers),
+            timestamp=now
+        )
+        
+        for zone in event.zones.all():
+            zone_attendees = AttendeeLocationLog.objects.filter(
+                log_timestamp__gte=cutoff,
+                location__within=zone.location_boundary
+            ).values('attendee').distinct().count()
+            
+            zone_managers = ManagerLocationLog.objects.filter(
+                log_timestamp__gte=cutoff,
+                location__within=zone.location_boundary
+            ).values('manager').distinct().count()
+            
+            CrowdLog.objects.create(
+                event=event,
+                zone=zone,
+                person_count=(zone_attendees + zone_managers),
+                timestamp=now
+            )
+            
+
+
 def start():
     scheduler = BackgroundScheduler()
     scheduler.add_jobstore(DjangoJobStore(), "default")
@@ -79,6 +125,15 @@ def start():
         trigger="interval",
         minutes=1,
         id="density_check",
+        max_instances=1,
+        replace_existing=True,
+    )
+
+    scheduler.add_job(
+        record_crowd_data,
+        trigger="interval",
+        minutes=10, 
+        id="analytics_logger",
         max_instances=1,
         replace_existing=True,
     )
