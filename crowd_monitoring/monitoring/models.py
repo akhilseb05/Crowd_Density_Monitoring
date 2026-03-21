@@ -72,3 +72,18 @@ class Alert(models.Model):
     recipient_type = models.CharField(max_length=50) # e.g., 'Admin', 'Manager'
     alert_message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+
+class CrowdLog(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='logs')
+    zone = models.ForeignKey(Zone, on_delete=models.CASCADE, related_name='logs', null=True, blank=True)
+    
+    person_count = models.IntegerField(default=0)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        if self.zone:
+            return f"{self.event.event_name} - {self.zone.zone_name} - {self.timestamp.strftime('%H:%M')} ({self.person_count})"
+        return f"{self.event.event_name} - TOTAL - {self.timestamp.strftime('%H:%M')} ({self.person_count})"

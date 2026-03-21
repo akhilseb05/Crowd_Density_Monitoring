@@ -1,15 +1,17 @@
 import json
 import os
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.gis.geos import GEOSGeometry, Point
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
+from django.utils.timezone import localtime
 from django.contrib import messages
 from twilio.rest import Client
-from .models import Admin, Event, Zone, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog, Alert
+import csv
+from .models import Admin, Event, Zone, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog, Alert, CrowdLog
 
 
 def admin_login(request):
@@ -184,6 +186,75 @@ def send_alerts(request, event_id):
 
     return render(request, 'alerts.html', {'event': event, 'zones': zones})
 
+def event_analytics(request, event_id):
+    if 'admin_id' not in request.session:
+        return redirect('admin_login')
+    
+    event = get_object_or_404(Event, id=event_id)
+    zones = event.zones.all()
+    
+    all_logs = CrowdLog.objects.filter(event=event).order_by('timestamp')
+    
+    # Extract unique timestamps for the X-Axis (formatted as HH:MM)
+    time_labels = list(dict.fromkeys([localtime(log.timestamp).strftime('%H:%M') for log in all_logs]))
+
+    total_logs = all_logs.filter(zone__isnull=True)
+    total_data = [log.person_count for log in total_logs]
+
+    zone_datasets = []
+    colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', "#8CF405FF", "#F405ECFF"] 
+    
+    for index, zone in enumerate(zones):
+        z_logs = all_logs.filter(zone=zone)
+        zone_datasets.append({
+            'label': zone.zone_name,
+            'data': [log.person_count for log in z_logs],
+            'borderColor': colors[index % len(colors)],
+            'backgroundColor': colors[index % len(colors)],
+            'fill': False,
+            'tension': 0.3 # Adds a slight curve to the lines
+        })
+
+    context = {
+        'event': event,
+        'time_labels': json.dumps(time_labels),
+        'total_data': json.dumps(total_data),
+        'zone_datasets': json.dumps(zone_datasets),
+    }
+    
+    return render(request, 'analytics.html', context)
+
+def export_event_analytics_csv(request, event_id):
+    if 'admin_id' not in request.session:
+        return redirect('admin_login')
+        
+    event = get_object_or_404(Event, id=event_id)
+    
+    # Create the HttpResponse object with the appropriate CSV headers.
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': f'attachment; filename="{event.event_name.replace(" ", "_")}_Analytics.csv"'},
+    )
+
+
+    writer = csv.writer(response)
+    
+    writer.writerow(['Date', 'Time', 'Event Name', 'Zone Name', 'Person Count'])
+
+    logs = CrowdLog.objects.filter(event=event).order_by('timestamp')
+
+    # Write data rows
+    for log in logs:
+        date_str = localtime(log.timestamp).strftime('%Y-%m-%d')
+        time_str = localtime(log.timestamp).strftime('%H:%M:%S')
+        
+        # If zone is None, label it as 'Total Event Crowd'
+        zone_name = log.zone.zone_name if log.zone else "Total Event Crowd"
+        
+        writer.writerow([date_str, time_str, event.event_name, zone_name, log.person_count])
+
+    return response
+
 
 def get_events_api(request):
     events = Event.objects.all().values('id', 'event_name')
@@ -215,7 +286,6 @@ def update_location_api(request):
         try:
             data = json.loads(request.body)
             attendee = get_object_or_404(Attendee, id=data.get('attendee_id'))
-            # Note: Point(longitude, latitude)
             location = Point(float(data.get('lng')), float(data.get('lat')))
             AttendeeLocationLog.objects.update_or_create(
                 attendee=attendee,
@@ -259,3 +329,5 @@ def update_manager_location_api(request):
             return JsonResponse({'status': 'updated'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        
+
