@@ -1,63 +1,156 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>GECW Admin Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | CrowdDense</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        /* Minimal styling to center the form on the screen */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
         body { 
-            font-family: sans-serif; 
+            /* Soft, off-white background to make the white card pop */
+            background-color: #f8fafc; 
             display: flex; 
             justify-content: center; 
-            padding-top: 50px; 
+            align-items: center;
+            min-height: 100vh; /* Centers perfectly on the screen */
+            color: #334155;
         }
+
         .login-container { 
-            border: 1px solid #ccc; 
-            padding: 20px; 
-            border-radius: 5px; 
-            width: 300px; }
-        .form-group { 
-            margin-bottom: 15px; 
+            background: #ffffff;
+            border: 1px solid #e2e8f0; 
+            padding: 40px; 
+            border-radius: 16px; /* Modern rounded corners */
+            width: 100%;
+            max-width: 400px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
         }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .alert-box {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+            color: #b91c1c;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
         input { 
             width: 100%; 
-            padding: 8px; 
-            box-sizing: 
-            border-box; 
+            padding: 12px 16px; 
+            font-size: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            transition: all 0.2s ease;
         }
+
+
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+
         button { 
             width: 100%; 
-            padding: 10px; 
-            cursor: pointer; 
+            padding: 12px; 
+            font-size: 15px;
+            font-weight: 600;
             background-color: #2563eb; 
             color: white; 
             border: none; 
+            border-radius: 8px;
+            cursor: pointer; 
+            transition: all 0.2s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #1d4ed8; /* Slightly darker blue on hover */
+            transform: translateY(-1px); /* Subtle lift effect */
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
 
 <div class="login-container">
-    <h2>Admin Login</h2>
+    <div class="login-header">
+        <h2>Admin Portal</h2>
+        <p>Sign in to manage your events and zones</p>
+    </div>
 
     {% if messages %}
-        {% for message in messages %}
-            <p style="color: red;">{{ message }}</p>
-        {% endfor %}
+        <div class="alert-box">
+            {% for message in messages %}
+                {{ message }}<br>
+            {% endfor %}
+        </div>
     {% endif %}
 
     <form method="POST">
         {% csrf_token %}
         <div class="form-group">
-            <label>Admin Name:</label><br>
-            <input type="text" name="name" required>
+            <label for="name">Admin Name</label>
+            <input type="text" id="name" name="name" placeholder="Enter your username" required>
         </div>
 
         <div class="form-group">
-            <label>Password:</label><br>
-            <input type="password" name="password" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
         </div>
 
-        <button type="submit">Login</button>
+        <button type="submit">Log in</button>
     </form>
 </div>
 
