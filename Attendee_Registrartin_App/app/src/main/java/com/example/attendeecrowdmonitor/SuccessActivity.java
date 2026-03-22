@@ -1,4 +1,4 @@
-package com.example.managercrowdmonitor;
+package com.example.attendeecrowdmonitor; // Keep your package name!
 
 import android.os.Bundle;
 import android.widget.Button;
@@ -28,8 +28,7 @@ public class SuccessActivity extends AppCompatActivity {
             });
         }
 
-        // 3. Handle the Physical Back Button (Replacing deprecated onBackPressed)
-        // This callback intercepts the back button to hide the app instead of closing it
+        // 3. Handle the Physical Back Button
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {

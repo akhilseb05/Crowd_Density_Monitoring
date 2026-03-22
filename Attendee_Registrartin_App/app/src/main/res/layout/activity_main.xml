@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Manager Portal"
+                android:text="Attendee Registration"
                 android:textColor="#0F172A"
                 android:textSize="32sp"
                 android:textStyle="bold" />
@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="32dp"
-                android:text="Enter staff details to start live coordination and tracking."
+                android:text="Enter your details to sync with the festival safety network."
                 android:textColor="#64748B"
                 android:textSize="16sp" />
 
@@ -62,7 +62,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:hint="Manager Name"
+                android:hint="Full Name"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
@@ -117,7 +117,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp"
-                android:hint="Manager Role (e.g. Security, Medical)"
+                android:hint="Accompanying People (Optional)"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
@@ -127,7 +127,7 @@
                     android:id="@+id/etAccompanies"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
@@ -137,7 +137,7 @@
                 android:text="Register &amp; Start Tracking"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                app:backgroundTint="#6D28D9"
+                app:backgroundTint="#2563EB"
                 app:cornerRadius="12dp"
                 app:elevation="2dp" />
 
@@ -145,7 +145,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="🔒 Background location permission is required for staff coordination."
+                android:text="🔒 Background location permission is required for live safety updates."
                 android:textAlignment="center"
                 android:textColor="#94A3B8"
                 android:textSize="12sp" />

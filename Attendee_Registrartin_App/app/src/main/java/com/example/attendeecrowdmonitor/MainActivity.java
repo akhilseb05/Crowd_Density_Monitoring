@@ -1,4 +1,4 @@
-package com.example.managercrowdmonitor;
+package com.example.attendeecrowdmonitor;
 
 import android.Manifest;
 import android.content.Intent;
@@ -15,15 +15,13 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    // Renamed variables to match the Manager model logic
-    private EditText etManagerName, etMobile, etEmail, etManagerRole;
+    private EditText etName, etMobile, etEmail, etAccompanies;
 
     // 1. Changed from Spinner to AutoCompleteTextView
     private AutoCompleteTextView spinnerEvents;
@@ -43,14 +41,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize UI components using your existing XML layout IDs
-        etManagerName = findViewById(R.id.etName);
+        // Initialize UI components
+        etName = findViewById(R.id.etName);
         etMobile = findViewById(R.id.etMobile);
         etEmail = findViewById(R.id.etEmail);
-
-        // Repurposing the old 'accompanies' field to act as the 'manager_role' input
-        etManagerRole = findViewById(R.id.etAccompanies);
-
+        etAccompanies = findViewById(R.id.etAccompanies);
         spinnerEvents = findViewById(R.id.spinnerEvents);
 
         // 3. Listen for dropdown clicks and save the selected position
@@ -83,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
                                 android.R.layout.simple_dropdown_item_1line, eventNames);
 
                         spinnerEvents.setAdapter(adapter);
+
                     } catch (JSONException e) { e.printStackTrace(); }
                 },
                 error -> Toast.makeText(this, "Could not load events. Check Ngrok & Django!", Toast.LENGTH_LONG).show()
@@ -107,29 +103,26 @@ public class MainActivity extends AppCompatActivity {
 
         JSONObject postData = new JSONObject();
         try {
-            // Updated keys to match what your Manager Django view expects
             postData.put("event_id", eventIds.get(selectedEventPosition));
-            postData.put("manager_name", etManagerName.getText().toString());
-            postData.put("manager_role", etManagerRole.getText().toString());
-            postData.put("mobile_no", etMobile.getText().toString());
-            postData.put("email_id", etEmail.getText().toString());
+            postData.put("name", etName.getText().toString());
+            postData.put("phone", etMobile.getText().toString());
+            postData.put("email", etEmail.getText().toString());
+            postData.put("accompanies", etAccompanies.getText().toString());
         } catch (JSONException e) { e.printStackTrace(); }
 
-        // Updated the endpoint to hit the manager registration URL
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, BASE_URL + "register-manager/", postData,
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, BASE_URL + "register-attendee/", postData,
                 response -> {
                     try {
-                        // Extracting manager_id instead of attendee_id
-                        String managerId = response.getString("manager_id");
+                        String attendeeId = response.getString("attendee_id");
 
-                        // 1. Start the Background Service
-                        startBackgroundTracking(managerId);
+                        // Start the Background Service
+                        startBackgroundTracking(attendeeId);
 
-                        // 2. TRIGGER THE SUCCESS SCREEN
+                        // TRIGGER THE SUCCESS SCREEN
                         Intent intent = new Intent(MainActivity.this, SuccessActivity.class);
                         startActivity(intent);
 
-                        // 3. Close this form so they can't go back to it
+                        // Close this form so they can't go back to it
                         finish();
 
                     } catch (JSONException e) {
@@ -142,11 +135,10 @@ public class MainActivity extends AppCompatActivity {
         requestQueue.add(request);
     }
 
-    private void startBackgroundTracking(String managerId) {
+    private void startBackgroundTracking(String attendeeId) {
         Intent intent = new Intent(this, LocationService.class);
-        // Passing MANAGER_ID to the location service
-        intent.putExtra("MANAGER_ID", managerId);
+        intent.putExtra("ATTENDEE_ID", attendeeId);
         startForegroundService(intent);
-        Toast.makeText(this, "Manager Tracking Activated!", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Tracking Activated!", Toast.LENGTH_LONG).show();
     }
 }
