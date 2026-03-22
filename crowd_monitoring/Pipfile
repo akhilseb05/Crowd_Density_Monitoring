@@ -11,6 +11,7 @@ twilio = "*"
 djangorestframework = "*"
 django-cors-headers = "*"
 django-apscheduler = "*"
+qrcode = {extras = ["pil"], version = "*"}
 
 [dev-packages]
 

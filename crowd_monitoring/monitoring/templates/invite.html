@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Keeping ONLY the CSS required for the layout and sidebar 
+       Everything else is standard HTML 
+    */
+    :root {
+        --primary-blue: #2563eb;
+        --light-blue: #eff6ff;
+        --text-light: #6b7280;
+        --bg-white: #ffffff;
+        --border-gray: #e5e7eb;
+    }
+    
+    .dashboard-container { 
+        display: flex; 
+        min-height: 100vh; 
+    }
+    
+    .sidebar { 
+        width: 150px; 
+        background: var(--bg-white); 
+        border-right: 1px solid var(--border-gray); 
+        display: flex; 
+        flex-direction: column; 
+        padding-top: 25px; 
+        position: sticky;
+        top: 0;
+        height: 100vh; 
+        margin-right: 20px; 
+    }
+    .back-btn { 
+        text-decoration: none; 
+        color: var(--text-light); 
+        font-size: 15px; 
+        font-weight: 700; 
+        margin-bottom: 20px; 
+        margin-left: 5px;
+        text-transform: uppercase; 
+        padding-left: 15px; 
+    }
+    .nav-list { list-style: none; padding: 0; width: 100%; }
+    .nav-item { margin-bottom: 20px; }
+    .nav-item a { 
+        text-decoration: none; 
+        color: var(--text-light); 
+        font-size: 15px; 
+        display: block; 
+        padding: 10px 5px 10px 20px; 
+    }
+    .nav-item.active { background: var(--light-blue); border-right: 3px solid var(--primary-blue); }
+    .nav-item.active a { color: var(--primary-blue); font-weight: 700; }
+    
+    .main-content { 
+        flex-grow: 1; 
+        padding: 20px;
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="sidebar">
+        <a href="{% url 'event_list' %}" class="back-btn">&#8592; Back</a>
+        <ul class="nav-list">
+            <li class="nav-item"><a href="{% url 'dashboard' event.id %}">1. Dashboard</a></li>
+            <li class="nav-item"><a href="{% url 'send_alerts' event.id %}">2. Alerts</a></li>
+            <li class="nav-item"><a href="{% url 'event_analytics' event.id %}">3. Analytics</a></li>
+            <li class="nav-item active"><a href="#">4. Invite & Share</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <h2>Share Links : {{ event.event_name }}</h2>
+        <p>Distribute links and QR codes to install the Event Registration App for Attendees and Managers.</p>
+
+        <hr>
+
+        <h3>Attendee Registration App</h3>
+        <p>Provide this link to attendees to install the app, register into the event, share their live location, and receive alerts.</p>
+        
+        <div>
+            <img id="qr-attendee" src="data:image/png;base64,{{ attendee_qr }}" alt="Attendee QR" width="150" border="1">
+            <br>
+            <button onclick="downloadQR('qr-attendee', 'Attendee_Access_QR.png')">Download Attendee QR</button>
+        </div>
+        
+        <br>
+        
+        <div>
+            <label>Link: </label>
+            <input type="text" id="link-attendee" value="{{ attendee_link }}" readonly size="50">
+            <button onclick="copyLink('link-attendee')">Copy Link</button>
+        </div>
+
+        <br><br>
+        <hr>
+        <br>
+
+        <h3>Manager Registration App</h3>
+        <p>Provide this link to managers to install the app, register into the event, share their live location, and receive alerts and guidance.</p>
+        
+        <div>
+            <img id="qr-manager" src="data:image/png;base64,{{ manager_qr }}" alt="Manager QR" width="150" border="1">
+            <br>
+            <button onclick="downloadQR('qr-manager', 'Manager_Access_QR.png')">Download Manager QR</button>
+        </div>
+        
+        <br>
+        
+        <div>
+            <label>Link: </label>
+            <input type="text" id="link-manager" value="{{ manager_link }}" readonly size="50">
+            <button onclick="copyLink('link-manager')">Copy Link</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // JS remains exactly the same so functionality isn't lost
+    function downloadQR(imageId, filename) {
+        const imageSrc = document.getElementById(imageId).src;
+        const link = document.createElement('a');
+        link.href = imageSrc;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function copyLink(inputId) {
+        const copyText = document.getElementById(inputId);
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value).then(() => {
+            alert("Link copied to clipboard!");
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    }
+</script>
+{% endblock %}
