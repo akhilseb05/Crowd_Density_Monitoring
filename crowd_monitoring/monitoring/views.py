@@ -1,5 +1,9 @@
 import json
 import os
+import csv
+import qrcode
+import base64
+from io import BytesIO
 from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
@@ -10,7 +14,6 @@ from datetime import timedelta
 from django.utils.timezone import localtime
 from django.contrib import messages
 from twilio.rest import Client
-import csv
 from .models import Admin, Event, Zone, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog, Alert, CrowdLog
 
 
@@ -331,3 +334,32 @@ def update_manager_location_api(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
         
 
+def generate_qr_base64(data):
+    """Generates a QR code and returns it as a base64 string"""
+    qr = qrcode.QRCode(version=1, box_size=10, border=2)
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    return base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+def invite_share(request, event_id):
+    if 'admin_id' not in request.session:
+        return redirect('admin_login')
+        
+    event = get_object_or_404(Event, id=event_id)
+    
+    attendee_link = "https://github.com/akhil-codec/CrowdDense/blob/main/APK/Attendee_Registration_App/Attendee_Registration.apk"
+    manager_link = "https://github.com/akhil-codec/CrowdDense/blob/main/APK/Manager_Registration_App/Manager_Registration.apk"
+    
+    context = {
+        'event': event,
+        'attendee_link': attendee_link,
+        'manager_link': manager_link,
+        'attendee_qr': generate_qr_base64(attendee_link),
+        'manager_qr': generate_qr_base64(manager_link),
+    }
+    
+    return render(request, 'invite.html', context)

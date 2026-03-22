@@ -17,7 +17,6 @@
     body {
         margin: 0;
         background-color: var(--bg-gray);
-        font-family: 'Inter', -apple-system, sans-serif;
     }
 
     .layout-container {
@@ -169,7 +168,7 @@
 
 <div class="layout-container">
     <nav class="sidebar">
-        <a href="{% url 'event_list' %}" class="back-btn">← Back</a>
+        <a href="{% url 'event_list' %}" class="back-btn">&#8592; Back</a>
         <ul class="nav-list">
             <li class="nav-item">
                 <a href="{% url 'dashboard' event.id %}">1. Dashboard</a>
@@ -179,6 +178,9 @@
             </li>
             <li class="nav-item">
                 <a href="{% url 'event_analytics' event.id %}">3. Analytics</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'invite_share' event.id %}">4. Invite & Share</a>
             </li>
         </ul>
     </nav>

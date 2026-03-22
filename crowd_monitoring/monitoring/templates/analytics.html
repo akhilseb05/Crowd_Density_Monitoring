@@ -87,7 +87,7 @@
 <div class="dashboard-container">
 
     <div class="sidebar">
-        <a href="{% url 'event_list' %}" class="back-btn">← BACK</a>
+        <a href="{% url 'event_list' %}" class="back-btn">&#x2190; Back</a>
         
         <ul class="nav-list">
             <li class="nav-item">
@@ -100,7 +100,7 @@
                 <a href="#">3. Analytics</a>
             </li>
             <li class="nav-item">
-                <a href="#">4. Invite & Share</a>
+                <a href="{% url 'invite_share' event.id %}">4. Invite & Share</a>
             </li>
         </ul>
     </div>

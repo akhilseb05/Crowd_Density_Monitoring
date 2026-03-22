@@ -16,4 +16,5 @@ urlpatterns = [
     path('api/update-manager-location/', views.update_manager_location_api, name='update_manager_location_api'),
     path('event/<int:event_id>/analytics/', views.event_analytics, name='event_analytics'),
     path('event/<int:event_id>/analytics/export/', views.export_event_analytics_csv, name='export_event_analytics_csv'),
+    path('event/<int:event_id>/invite/', views.invite_share, name='invite_share'),
 ]
