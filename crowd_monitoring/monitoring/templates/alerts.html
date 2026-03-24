@@ -92,12 +92,17 @@
         color: var(--primary-blue);
     }
 
+    .form-column {
+        flex: 1.3; 
+        max-width: 650px; 
+    }
+
     .alert-card {
         background: var(--bg-white);
-        max-width: 500px;
+        width: 100%; 
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        padding: 30px;
+        padding: 40px; /* Increased padding from 30px to make the inside feel more spacious */
     }
 
     .success-box {
@@ -162,11 +167,113 @@
         transition: 0.2s;
     }
 
-    .submit-btn:hover { background: var(--dark-blue); }
+    .submit-btn:hover { 
+        background: var(--dark-blue); 
+    }
+
+    .content-grid {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+    }
+
+
+    .history-column {
+        flex: 1;
+        background: var(--bg-white);
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 30px;
+        max-width: 600px;
+    }
+
+    .history-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--border-gray);
+        padding-bottom: 10px;
+    }
+
+    .alert-item {
+        border-bottom: 1px solid var(--border-gray);
+        padding: 15px 0;
+    }
+
+    .alert-item:last-child {
+        border-bottom: none;
+    }
+
+    .alert-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+
+    .badge-zone {
+        background: var(--light-blue);
+        color: var(--primary-blue);
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+
+    .badge-type {
+        background: #f3e8ff;
+        color: #7e22ce;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+    
+    .alert-time {
+        color: var(--text-light);
+    }
+
+    .alert-message {
+        font-size: 14px;
+        color: var(--text-dark);
+        line-height: 1.5;
+        background: var(--bg-gray);
+        padding: 10px;
+        border-radius: 6px;
+        border-left: 3px solid #f87171; /* Red accent for alerts */
+    }
+
+.load-more-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        padding-top: 10px;
+    }
+
+    .minimal-load-btn {
+        background: var(--bg-gray);
+        color: var(--text-light);
+        border: 1px solid var(--border-gray);
+        border-radius: 20px; /* Makes it a pill shape */
+        width: 60px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+
+    .minimal-load-btn:hover {
+        background: var(--light-blue);
+        color: var(--primary-blue);
+        border-color: var(--primary-blue);
+        transform: scale(1.05); /* Slight pop effect on hover */
+    }
 
 </style>
 
 <div class="layout-container">
+    
     <nav class="sidebar">
         <a href="{% url 'event_list' %}" class="back-btn">&#8592; Back</a>
         <ul class="nav-list">
@@ -196,36 +303,131 @@
             {% endfor %}
         {% endif %}
 
-        <div class="alert-card">
-            <form method="POST">
-                {% csrf_token %}
+        <div class="content-grid">
+            
+            <div class="form-column">
+                <div class="alert-card">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label>Target Zone</label>
+                            <select name="zone" class="input-field" required>
+                                <option value="" disabled selected>Select location...</option>
+                                {% for zone in zones %}
+                                    <option value="{{ zone.id }}">{{ zone.zone_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Recipients</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="recipient_type" value="attendee" checked> Attendees</label>
+                                <label><input type="radio" name="recipient_type" value="manager"> Managers</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea name="message" class="input-field" rows="4" required placeholder="Type emergency text..."></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn">SEND BROADCAST</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="history-column">
+                <div class="history-title">Recent Broadcasts</div>
                 
-                <div class="form-group">
-                    <label>Target Zone</label>
-                    <select name="zone" class="input-field" required>
-                        <option value="" disabled selected>Select location...</option>
-                        {% for zone in zones %}
-                            <option value="{{ zone.id }}">{{ zone.zone_name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Recipients</label>
-                    <div class="radio-group">
-                        <label><input type="radio" name="recipient_type" value="attendee" checked> Attendees</label>
-                        <label><input type="radio" name="recipient_type" value="manager"> Managers</label>
+                <div id="alerts-container">
+                    {% for alert in page_obj %}
+                    <div class="alert-item">
+                        <div class="alert-header">
+                            <div>
+                                <span class="badge-zone">{{ alert.zone.zone_name }}</span>
+                                <span class="badge-type">{{ alert.recipient_type|title }}</span>
+                            </div>
+                            <span class="alert-time">{{ alert.created_at|date:"M d, g:i A" }}</span>
+                        </div>
+                        <div class="alert-message">
+                            {{ alert.alert_message }}
+                        </div>
                     </div>
+                    {% empty %}
+                    <p style="color: var(--text-light); font-size: 14px;">No alerts have been sent yet.</p>
+                    {% endfor %}
                 </div>
 
-                <div class="form-group">
-                    <label>Message</label>
-                    <textarea name="message" class="input-field" rows="4" required placeholder="Type emergency text..."></textarea>
-                </div>
+                {% if page_obj.has_next %}
+                    <div class="load-more-wrapper" id="load-more-container">
+                        <button id="load-more" class="minimal-load-btn" data-next-page="{{ page_obj.next_page_number }}" title="Load Older Alerts">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="1"></circle>
+                                <circle cx="19" cy="12" r="1"></circle>
+                                <circle cx="5" cy="12" r="1"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
 
-                <button type="submit" class="submit-btn">SEND BROADCAST</button>
-            </form>
         </div>
     </main>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loadMoreBtn = document.getElementById('load-more');
+    const container = document.getElementById('alerts-container');
+
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            const nextPage = this.getAttribute('data-next-page');
+            const url = `?page=${nextPage}`;
+
+            // Add a simple loading state
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Append the new alerts to the container
+                data.alerts.forEach(alert => {
+                    const alertHtml = `
+                        <div class="alert-item">
+                            <div class="alert-header">
+                                <div>
+                                    <span class="badge-zone">${alert.zone_name}</span>
+                                    <span class="badge-type">${alert.recipient_type}</span>
+                                </div>
+                                <span class="alert-time">${alert.time}</span>
+                            </div>
+                            <div class="alert-message">
+                                ${alert.message}
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', alertHtml);
+                });
+
+                // Update or hide the button based on has_next
+                if (data.has_next) {
+                    loadMoreBtn.setAttribute('data-next-page', data.next_page_number);
+                } else {
+                    loadMoreBtn.style.display = 'none'; // Hide button if no more pages
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching alerts:", error);
+                loadMoreBtn.textContent = "Error loading. Try again.";
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

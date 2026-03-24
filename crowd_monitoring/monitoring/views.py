@@ -13,6 +13,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.timezone import localtime
 from django.contrib import messages
+from django.core.paginator import Paginator
 from twilio.rest import Client
 from .models import Admin, Event, Zone, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog, Alert, CrowdLog
 
@@ -135,42 +136,64 @@ def dashboard(request, event_id):
 def send_alerts(request, event_id):
     if 'admin_id' not in request.session:
         return redirect('admin_login')
-    # Fetch the specific event
+    
     event = get_object_or_404(Event, id=event_id)
     zones = event.zones.all()
     
+    # Fetch alerts related to this event's zones, ordered newest first
+    alert_list = Alert.objects.filter(zone__event=event).order_by('-timestamp')
+    
+    # Set up Paginator (5 alerts per page)
+    paginator = Paginator(alert_list, 3)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    # --- HANDLE AJAX REQUEST FOR "LOAD MORE" ---
+    # If the request is an AJAX request asking for more alerts, return JSON
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        alerts_data = []
+        for alert in page_obj:
+            alerts_data.append({
+                'zone_name': alert.zone.zone_name,
+                'recipient_type': alert.recipient_type.capitalize(),
+                'message': alert.alert_message,
+                # Format time nicely, e.g., "Oct 24, 2:30 PM"
+                'time': alert.timestamp.strftime("%b %d, %I:%M %p") 
+            })
+        return JsonResponse({
+            'alerts': alerts_data,
+            'has_next': page_obj.has_next(),
+            'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None
+        })
+
+    # --- HANDLE POST REQUEST (SENDING ALERT) ---
     if request.method == "POST":
         zone_id = request.POST.get('zone')
         recipient_type = request.POST.get('recipient_type')
         message_text = request.POST.get('message')
         
         selected_zone = get_object_or_404(Zone, id=zone_id)
-        cutoff = timezone.now() - timedelta(minutes=5)
         
-        # Twilio setup,account details are stored in .env file
         account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
         auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
         twilio_number = os.environ.get('TWILIO_PHONE_NUMBER')
 
         client = Client(account_sid, auth_token)
-        # Filter active people ONLY in the selected zone of THIS event
+        
         recipients = []
         if recipient_type == 'attendee':
             logs = AttendeeLocationLog.objects.filter(
                 attendee__event=event,
-                log_timestamp__gte=cutoff,
                 location__within=selected_zone.location_boundary
             ).select_related('attendee').distinct('attendee')
             recipients = [log.attendee.mobile_no for log in logs]
         else:
             logs = ManagerLocationLog.objects.filter(
                 manager__event=event,
-                log_timestamp__gte=cutoff,
                 location__within=selected_zone.location_boundary
             ).select_related('manager').distinct('manager')
             recipients = [log.manager.mobile_no for log in logs]
 
-        # Send and Log
         success_count = 0
         for phone in recipients:
             try:
@@ -183,11 +206,17 @@ def send_alerts(request, event_id):
             except Exception as e:
                 print(f"Error sending to {phone}: {e}")
 
+
         Alert.objects.create(zone=selected_zone, recipient_type=recipient_type, alert_message=message_text)
         messages.success(request, f"Alert sent to {success_count} recipients!")
         return redirect('send_alerts', event_id=event_id)
 
-    return render(request, 'alerts.html', {'event': event, 'zones': zones})
+    context = {
+        'event': event, 
+        'zones': zones,
+        'page_obj': page_obj 
+    }
+    return render(request, 'alerts.html', context)
 
 def event_analytics(request, event_id):
     if 'admin_id' not in request.session:
@@ -351,9 +380,9 @@ def invite_share(request, event_id):
         
     event = get_object_or_404(Event, id=event_id)
     
-    attendee_link = "https://github.com/akhil-codec/CrowdDense/blob/main/APK/Attendee_Registration_App/Attendee_Registration.apk"
-    manager_link = "https://github.com/akhil-codec/CrowdDense/blob/main/APK/Manager_Registration_App/Manager_Registration.apk"
-    
+    attendee_link = "https://southbound-earle-pressuringly.ngrok-free.dev/"
+    manager_link = "https://southbound-earle-pressuringly.ngrok-free.dev/"
+       
     context = {
         'event': event,
         'attendee_link': attendee_link,
@@ -363,3 +392,4 @@ def invite_share(request, event_id):
     }
     
     return render(request, 'invite.html', context)
+
