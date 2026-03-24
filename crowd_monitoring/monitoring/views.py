@@ -94,6 +94,38 @@ def event_list(request):
 
     return render(request, 'event_list.html', {'events': events})
 
+
+def settings_view(request):
+    if 'admin_id' not in request.session:
+        return redirect('admin_login')
+
+    if request.method == "POST":
+        username = request.POST.get('username')
+        contact_no = request.POST.get('contact_no') # Capture the new field
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match. Please try again.")
+            return redirect('settings_view')
+        
+        if Admin.objects.filter(name=username).exists():
+            messages.error(request, f"The username '{username}' is already taken.")
+            return redirect('settings_view')
+
+        new_admin = Admin(
+            name=username,
+            contact_no=contact_no, 
+            password=password      
+        )
+        new_admin.save()
+
+        messages.success(request, f"Admin account '{username}' created successfully!")
+        return redirect('settings_view')
+
+    return render(request, 'settings.html')
+
+
 def dashboard(request, event_id):
     if 'admin_id' not in request.session:
         return redirect('admin_login')
@@ -193,7 +225,7 @@ def send_alerts(request, event_id):
                 location__within=selected_zone.location_boundary
             ).select_related('manager').distinct('manager')
             recipients = [log.manager.mobile_no for log in logs]
-
+        print(recipients,"hello")
         success_count = 0
         for phone in recipients:
             try:

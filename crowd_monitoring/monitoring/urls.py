@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     # The home page for your app (shows the list of events and the 'Add' form)
     path('', views.event_list, name='event_list'),
+    path('settings', views.settings_view, name='settings_view'),
     path('admin-login', views.admin_login, name='admin_login'),
     path('admin-logout', views.admin_logout, name='admin_logout'),
     # The dashboard page for a specific event (uses the Event ID)

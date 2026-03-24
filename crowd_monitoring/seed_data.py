@@ -21,9 +21,9 @@ def run_seed(event_name, num_attendees=100, num_managers=12):
     def get_random_gecw_point():
         boundary_coords = [
             (75.968463, 11.832977),
-            (75.968862, 11.834550),
-            (75.970386, 11.834107),
-            (75.970180, 11.832314),
+            (75.969261, 11.836123), 
+            (75.971922, 11.835676), 
+            (75.971896, 11.831650),
             (75.968463, 11.832977)
         ]
         poly = Polygon(boundary_coords)
