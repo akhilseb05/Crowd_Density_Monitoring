@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.contrib.gis.geos import Point, Polygon
 from django.utils import timezone
+import json
+from django.urls import reverse
 from .models import Zone, AttendeeLocationLog, Attendee, Event, Admin
 
 class CrowdDensityTest(TestCase):
@@ -107,3 +109,64 @@ class AdvancedCrowdDensityTest(TestCase):
         
         self.assertEqual(count_within, 0, "Point on boundary is not 'within'")
         self.assertEqual(count_intersects, 1, "Point on boundary 'intersects'")
+
+
+class ApiEndpointTests(TestCase):
+    def setUp(self):
+        self.event = Event.objects.create(
+            event_name="Tech Fest",
+            location_boundary=Polygon(((0, 0), (0, 10), (10, 10), (10, 0), (0, 0))),
+            event_date=timezone.now().date(),
+            event_time=timezone.now().time()
+        )
+
+    def test_register_attendee_api_success(self):
+        """Test the attendee registration API with valid JSON payload."""
+        payload = {
+            "event_id": self.event.id,
+            "name": "Test User",
+            "phone": "9876543210",
+            "email": "test@example.com",
+            "accompanies": 2
+        }
+        
+
+        response = self.client.post(
+            reverse('register_api'), 
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['status'], 'success')
+        self.assertEqual(Attendee.objects.count(), 1)
+        
+        # Verify the phone number was formatted correctly with +91
+        attendee = Attendee.objects.first()
+        self.assertEqual(attendee.mobile_no, "+919876543210")
+
+    def test_update_location_api(self):
+        """Test that the API successfully creates/updates a location log."""
+        attendee = Attendee.objects.create(
+            event=self.event, name="Tracker User", mobile_no="+919999999999"
+        )
+        
+        payload = {
+            "attendee_id": attendee.id,
+            "lat": 10.5,
+            "lng": 76.2
+        }
+        
+        response = self.client.post(
+            reverse('update_location_api'),
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(AttendeeLocationLog.objects.count(), 1)
+        
+        log = AttendeeLocationLog.objects.first()
+        # Verify X and Y mapped correctly to Lng and Lat
+        self.assertEqual(log.location.x, 76.2)
+        self.assertEqual(log.location.y, 10.5)
