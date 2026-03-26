@@ -8,7 +8,7 @@ django.setup()
 
 from monitoring.models import Event, Attendee, Manager, AttendeeLocationLog, ManagerLocationLog
 
-def run_seed(event_name, num_attendees=100, num_managers=12):
+def run_seed(event_name, num_attendees=5000, num_managers=12):
     try:
         event = Event.objects.get(event_name=event_name)
     except Event.DoesNotExist:
