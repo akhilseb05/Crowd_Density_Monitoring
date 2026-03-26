@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 6.1.1 (Python 3.12.13 on linux)" generated="20260323 16:37:22.989" rpa="false" schemaversion="4">
+<suite id="s1" name="Api Tests" source="/app/robot_tests/api_tests.robot">
+<test id="s1-t1" name="Mobile App Can Register A New Attendee" line="12">
+<kw name="Create Session" library="RequestsLibrary">
+<arg>crowd_api</arg>
+<arg>${BASE_URL}</arg>
+<doc>Create Session: create a HTTP session to a server</doc>
+<msg timestamp="20260323 16:37:23.141" level="INFO">Creating Session using : alias=crowd_api, url=http://web:8000, headers={},                     cookies={}, auth=None, timeout=None, proxies=None, verify=False,                     debug=0 </msg>
+<status status="PASS" starttime="20260323 16:37:23.141" endtime="20260323 16:37:23.141"/>
+</kw>
+<kw name="Create Dictionary" library="BuiltIn">
+<var>${headers}</var>
+<arg>Content-Type=application/json</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20260323 16:37:23.142" level="INFO">${headers} = {'Content-Type': 'application/json'}</msg>
+<status status="PASS" starttime="20260323 16:37:23.141" endtime="20260323 16:37:23.142"/>
+</kw>
+<kw name="Create Dictionary" library="BuiltIn">
+<var>${payload}</var>
+<arg>event_id=4</arg>
+<arg>name=Robot User</arg>
+<arg>phone=1122334455</arg>
+<arg>email=robot2@example.com</arg>
+<arg>accompanies=0</arg>
+<doc>Creates and returns a dictionary based on the given ``items``.</doc>
+<msg timestamp="20260323 16:37:23.142" level="INFO">${payload} = {'event_id': '4', 'name': 'Robot User', 'phone': '1122334455', 'email': 'robot2@example.com', 'accompanies': '0'}</msg>
+<status status="PASS" starttime="20260323 16:37:23.142" endtime="20260323 16:37:23.142"/>
+</kw>
+<kw name="POST On Session" library="RequestsLibrary">
+<var>${response}</var>
+<arg>crowd_api</arg>
+<arg>${REGISTER_URI}</arg>
+<arg>json=${payload}</arg>
+<arg>headers=${headers}</arg>
+<arg>expected_status=any</arg>
+<doc>Sends a POST request on a previously created HTTP Session.</doc>
+<msg timestamp="20260323 16:37:23.169" level="INFO">POST Request : url=http://web:8000/api/register-attendee/ 
+ path_url=/api/register-attendee/ 
+ headers={'User-Agent': 'python-requests/2.32.5', 'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*', 'Connection': 'keep-alive', 'Content-Type': 'application/json', 'Content-Length': '113'} 
+ body=b'{"event_id": "4", "name": "Robot User", "phone": "1122334455", "email": "robot2@example.com", "accompanies": "0"}' 
+ </msg>
+<msg timestamp="20260323 16:37:23.169" level="INFO">POST Response : url=http://web:8000/api/register-attendee/ 
+ status=400, reason=Bad Request 
+ headers={'Date': 'Mon, 23 Mar 2026 16:37:23 GMT', 'Server': 'WSGIServer/0.2 CPython/3.12.13', 'Content-Type': 'text/html', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin', 'Cross-Origin-Opener-Policy': 'same-origin', 'Connection': 'close'} 
+ body=&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta http-equiv="content-type" content="text/html; charset=utf-8"&gt;
+  &lt;meta name="robots" content="NONE,NOARCHIVE"&gt;
+  &lt;title&gt;DisallowedHost
+          at /api/register-attendee/&lt;/title&gt;
+  &lt;style&gt;
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background-color:#fff; color:#000; }
+    body &gt; :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; }
+    h2 { margin-bottom:.8em; }
+    h3 { margin:1em 0 .5em 0; }
+    h4 { margin:0 0 .5em 0; font-weight: normal; }
+    code, pre { font-size: 100%; white-space: pre-wrap; word-break: break-word; }
+    summary { cursor: pointer; }
+    table { border:1px solid #ccc; border-collapse: collapse; width:100%; background:white; }
+    tbody td, tbody th { vertical-align:top; padding:2px 3px; }
+    thead th {
+      padding:1px 6px 1px 3px; background:#fefefe; text-align:left;
+      font-weight:normal; font-size: 0.6875rem; border:1px solid #ddd;
+    }
+    tbody th { width:12em; text-align:right; color:#666; padding-right:.5em; }
+    table.vars { margin:5px 10px 2px 40px; width: auto; }
+    table.vars td, table.req td { font-family:monospace; }
+    table td.code { width:100%; }
+    table td.code pre { overflow:hidden; }
+    table.source th { color:#666; }
+    table.source td { font-family:monospace; white-space:pre; border-bottom:1px solid #eee; }
+    ul.traceback { list-style-type:none; color: #222; }
+    ul.traceback li.cause { word-break: break-word; }
+    ul.traceback li.frame { padding-bottom:1em; color:#4f4f4f; }
+    ul.traceback li.user { background-color:#e0e0e0; color:#000 }
+    div.context { padding:10px 0; overflow:hidden; }
+    div.context ol { padding-left:30px; margin:0 10px; list-style-position: inside; }
+    div.context ol li { font-family:monospace; white-space:pre; color:#777; cursor:pointer; padding-left: 2px; }
+    div.context ol li pre { display:inline; }
+    div.context ol.context-line li { color:#464646; background-color:#dfdfdf; padding: 3px 2px; }
+    div.context ol.context-line li span { position:absolute; right:32px; }
+    .user div.context ol.context-line li { background-color:#bbb; color:#000; }
+    .user div.context ol li { color:#666; }
+    div.commands, summary.commands { margin-left: 40px; }
+    div.commands a, summary.commands { color:#555; text-decoration:none; }
+    .user div.commands a { color: black; }
+    #summary { background: #ffc; }
+    #summary h2 { font-weight: normal; color: #666; }
+    #info { padding: 0; }
+    #info &gt; * { padding:10px 20px; }
+    #explanation { background:#eee; }
+    #template, #template-not-exist { background:#f6f6f6; }
+    #template-not-exist ul { margin: 0 0 10px 20px; }
+    #template-not-exist .postmortem-section { margin-bottom: 3px; }
+    #unicode-hint { background:#eee; }
+    #traceback { background:#eee; }
+    #requestinfo { background:#f6f6f6; padding-left:120px; }
+    #summary table { border:none; background:transparent; }
+    #requestinfo h2, #requestinfo h3 { position:relative; margin-left:-100px; }
+    #requestinfo h3 { margin-bottom:-1em; }
+    .error { background: #ffc; }
+    .specific { color:#cc3300; font-weight:bold; }
+    h2 span.commands { font-size: 0.7rem; font-weight:normal; }
+    span.commands a:link {color:#5E5694;}
+    pre.exception_value { font-family: sans-serif; color: #575757; font-size: 1.5rem; margin: 10px 0 10px 0; }
+    .append-bottom { margin-bottom: 10px; }
+    .fname { user-select: all; }
+  &lt;/style&gt;
+  
+  &lt;script&gt;
+    function hideAll(elems) {
+      for (var e = 0; e &lt; elems.length; e++) {
+        elems[e].style.display = 'none';
+      }
+    }
+    window.onload = function() {
+      hideAll(document.querySelectorAll('ol.pre-context'));
+      hideAll(document.querySelectorAll('ol.post-context'));
+      hideAll(document.querySelectorAll('div.pastebin'));
+    }
+    function toggle() {
+      for (var i = 0; i &lt; arguments.length; i++) {
+        var e = document.getElementById(arguments[i]);
+        if (e) {
+          e.style.display = e.style.display == 'none' ? 'block': 'none';
+        }
+      }
+      return false;
+    }
+    function switchPastebinFriendly(link) {
+      s1 = "Switch to copy-and-paste view";
+      s2 = "Switch back to interactive view";
+      link.textContent = link.textContent.trim() == s1 ? s2: s1;
+      toggle('browserTraceback', 'pastebinTraceback');
+      return false;
+    }
+  &lt;/script&gt;
+  
+&lt;/head&gt;
+&lt;body&gt;
+&lt;header id="summary"&gt;
+  &lt;h1&gt;DisallowedHost
+       at /api/register-attendee/&lt;/h1&gt;
+  &lt;pre class="exception_value"&gt;Invalid HTTP_HOST header: &amp;#x27;web:8000&amp;#x27;. You may need to add &amp;#x27;web&amp;#x27; to ALLOWED_HOSTS.&lt;/pre&gt;
+  &lt;table class="meta"&gt;
+
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Request Method:&lt;/th&gt;
+      &lt;td&gt;POST&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Request URL:&lt;/th&gt;
+      &lt;td&gt;http://web:8000/api/register-attendee/&lt;/td&gt;
+    &lt;/tr&gt;
+
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Django Version:&lt;/th&gt;
+      &lt;td&gt;6.0.3&lt;/td&gt;
+    &lt;/tr&gt;
+
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Exception Type:&lt;/th&gt;
+      &lt;td&gt;DisallowedHost&lt;/td&gt;
+    &lt;/tr&gt;
+
+
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Exception Value:&lt;/th&gt;
+      &lt;td&gt;&lt;pre&gt;Invalid HTTP_HOST header: &amp;#x27;web:8000&amp;#x27;. You may need to add &amp;#x27;web&amp;#x27; to ALLOWED_HOSTS.&lt;/pre&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+
+
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Exception Location:&lt;/th&gt;
+      &lt;td&gt;&lt;span class="fname"&gt;/usr/local/lib/python3.12/site-packages/django/http/request.py&lt;/span&gt;, line 205, in get_host&lt;/td&gt;
+    &lt;/tr&gt;
+
+
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Raised during:&lt;/th&gt;
+      &lt;td&gt;monitoring.views.register_attendee_api&lt;/td&gt;
+    &lt;/tr&gt;
+
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Python Executable:&lt;/th&gt;
+      &lt;td&gt;/usr/local/bin/python&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Python Version:&lt;/th&gt;
+      &lt;td&gt;3.12.13&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Python Path:&lt;/th&gt;
+      &lt;td&gt;&lt;pre&gt;&lt;code&gt;[&amp;#x27;/app&amp;#x27;,
+ &amp;#x27;/usr/local/lib/python312.zip&amp;#x27;,
+ &amp;#x27;/usr/local/lib/python3.12&amp;#x27;,
+ &amp;#x27;/usr/local/lib/python3.12/lib-dynload&amp;#x27;,
+ &amp;#x27;/usr/local/lib/python3.12/site-packages&amp;#x27;]&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th scope="row"&gt;Server time:&lt;/th&gt;
+      &lt;td&gt;Mon, 23 Mar 2026 16:37:23 +0000&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/header&gt;
+
+&lt;main id="info"&gt;
+
+
+
+
+&lt;div id="traceback"&gt;
+  &lt;h2&gt;Traceback &lt;span class="commands"&gt;&lt;a href="#" role="button" onclick="return switchPastebinFriendly(this);"&gt;
+    Switch to copy-and-paste view&lt;/a&gt;&lt;/span&gt;
+  &lt;/h2&gt;
+  &lt;div id="browserTraceback"&gt;
+    &lt;ul class="traceback"&gt;
+      
+        
+        &lt;li class="frame django"&gt;
+          
+            &lt;code class="fname"&gt;/usr/local/lib/python3.12/site-packages/django/core/handlers/exception.py&lt;/code&gt;, line 55, in inner
+          
+
+          
+            &lt;div class="context" id="c139626822805440"&gt;
+              
+                &lt;ol start="48" class="pre-context" id="pre139626822805440"&gt;
+                
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;&lt;/pre&gt;&lt;/li&gt;
+                
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;        return inner&lt;/pre&gt;&lt;/li&gt;
+                
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;    else:&lt;/pre&gt;&lt;/li&gt;
+                
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;&lt;/pre&gt;&lt;/li&gt;
+                
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;        @wraps(get_response)&lt;/pre&gt;&lt;/li&gt;
+                
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;        def inner(request):&lt;/pre&gt;&lt;/li&gt;
+                
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;            try:&lt;/pre&gt;&lt;/li&gt;
+                
+                &lt;/ol&gt;
+              
+              &lt;ol start="55" class="context-line"&gt;
+                &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;                response = get_response(request)
+                               ^^^^^^^^^^^^^^^^^^^^^&lt;/pre&gt; &lt;span&gt;â¦&lt;/span&gt;&lt;/li&gt;
+              &lt;/ol&gt;
+              
+                &lt;ol start='56' class="post-context" id="post139626822805440"&gt;
+                  
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;            except Exception as exc:&lt;/pre&gt;&lt;/li&gt;
+                  
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;                response = response_for_exception(request, exc)&lt;/pre&gt;&lt;/li&gt;
+                  
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;            return response&lt;/pre&gt;&lt;/li&gt;
+                  
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;&lt;/pre&gt;&lt;/li&gt;
+                  
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;        return inner&lt;/pre&gt;&lt;/li&gt;
+                  
+                  &lt;li onclick="toggle('pre139626822805440', 'post139626822805440')"&gt;&lt;pre&gt;&lt;/pre&gt;&lt;/li&gt;
+                  
+              &lt;/ol&gt;
+              
+            &lt;/div&gt;
+          
+
+          
+            
+              &lt;details&gt;
+                &lt;summary class="commands"&gt;Local vars&lt;/summary&gt;
+            
+            &lt;table class="vars" id="v139626822805440"&gt;
+              &lt;thead&gt;
+                &lt;tr&gt;
+                  &lt;th scope="col"&gt;Variable&lt;/th&gt;
+                  &lt;th scope="col"&gt;Value&lt;/th&gt;
+                &lt;/tr&gt;
+              &lt;/thead&gt;
+              &lt;tbody&gt;
+                
+                  &lt;tr&gt;
+                    &lt;td&gt;exc&lt;/td&gt;
+                    &lt;td class="code"&gt;&lt;pre&gt;DisallowedHost(&amp;quot;Invalid HTTP_HOST header: &amp;#x27;web:8000&amp;#x27;. You may need to add &amp;#x27;web&amp;#x27; to ALLOWED_HOSTS.&amp;quot;)&lt;/pre&gt;&lt;/td&gt;
+                  &lt;/tr&gt;
+                
+                  &lt;tr&gt;
+                    &lt;td&gt;get_response&lt;/td&gt;
+                    &lt;td class="code"&gt;&lt;pre&gt;&amp;lt;CommonMiddleware get_response=co... (set the log level to DEBUG or TRACE to see the full content) 
+ </msg>
+<msg timestamp="20260323 16:37:23.169" level="INFO">${response} = &lt;Response [400]&gt;</msg>
+<status status="PASS" starttime="20260323 16:37:23.142" endtime="20260323 16:37:23.169"/>
+</kw>
+<doc>Simulates a mobile app sending a POST request to register a user.</doc>
+<status status="PASS" starttime="20260323 16:37:23.140" endtime="20260323 16:37:23.170"/>
+</test>
+<doc>Integration tests for the Crowd Density APIs</doc>
+<status status="PASS" starttime="20260323 16:37:22.990" endtime="20260323 16:37:23.170"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat pass="1" fail="0" skip="0" id="s1" name="Api Tests">Api Tests</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
